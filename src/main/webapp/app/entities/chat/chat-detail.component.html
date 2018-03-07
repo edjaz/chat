@@ -1,0 +1,50 @@
+
+<div *ngIf="chat">
+    <h2><span jhiTranslate="chatApp.chat.detail.title">Chat</span> {{chat.id}}</h2>
+    <hr>
+    <jhi-alert-error></jhi-alert-error>
+    <dl class="row-md jh-entity-details">
+        <dt><span jhiTranslate="chatApp.chat.status">Status</span></dt>
+        <dd>
+            <span jhiTranslate="{{'chatApp.ChatStatus.' + chat.status}}">{{chat.status}}</span>
+        </dd>
+        <dt><span jhiTranslate="chatApp.chat.created">Created</span></dt>
+        <dd>
+            <span>{{chat.created | date:'medium'}}</span>
+        </dd>
+        <dt><span jhiTranslate="chatApp.chat.opened">Opened</span></dt>
+        <dd>
+            <span>{{chat.opened | date:'medium'}}</span>
+        </dd>
+        <dt><span jhiTranslate="chatApp.chat.closed">Closed</span></dt>
+        <dd>
+            <span>{{chat.closed | date:'medium'}}</span>
+        </dd>
+        <dt><span jhiTranslate="chatApp.chat.client">Client</span></dt>
+        <dd>
+            <div *ngIf="chat.clientId">
+                <a [routerLink]="['/client', chat.clientId]">{{chat.clientId}}</a>
+            </div>
+        </dd>
+        <dt><span jhiTranslate="chatApp.chat.conseiller">Conseiller</span></dt>
+        <dd>
+            <span *ngFor="let conseiller of chat.conseillers; let last = last">
+                <a [routerLink]="['/conseiller', conseiller?.id ]">{{conseiller.id}}</a>{{last ? '' : ', '}}
+            </span>
+        </dd>
+    </dl>
+
+    <button type="submit"
+            (click)="previousState()"
+            class="btn btn-info">
+        <span class="fa fa-arrow-left"></span>&nbsp;<span jhiTranslate="entity.action.back"> Back</span>
+    </button>
+
+    <button type="button"
+            [routerLink]="['/', { outlets: { popup: 'chat/'+ chat.id + '/edit'} }]"
+            replaceUrl="true"
+            queryParamsHandling="merge"
+            class="btn btn-primary">
+        <span class="fa fa-pencil"></span>&nbsp;<span jhiTranslate="entity.action.edit"> Edit</span>
+    </button>
+</div>

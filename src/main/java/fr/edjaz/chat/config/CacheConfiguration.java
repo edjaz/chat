@@ -41,6 +41,12 @@ public class CacheConfiguration {
             cm.createCache(fr.edjaz.chat.domain.Authority.class.getName(), jcacheConfiguration);
             cm.createCache(fr.edjaz.chat.domain.User.class.getName() + ".authorities", jcacheConfiguration);
             cm.createCache(fr.edjaz.chat.domain.SocialUserConnection.class.getName(), jcacheConfiguration);
+            cm.createCache(fr.edjaz.chat.domain.Chat.class.getName(), jcacheConfiguration);
+            cm.createCache(fr.edjaz.chat.domain.Chat.class.getName() + ".conseillers", jcacheConfiguration);
+            cm.createCache(fr.edjaz.chat.domain.Client.class.getName(), jcacheConfiguration);
+            cm.createCache(fr.edjaz.chat.domain.ExtraInformation.class.getName(), jcacheConfiguration);
+            cm.createCache(fr.edjaz.chat.domain.Conseiller.class.getName(), jcacheConfiguration);
+            cm.createCache(fr.edjaz.chat.domain.Message.class.getName(), jcacheConfiguration);
             // jhipster-needle-ehcache-add-entry
         };
     }

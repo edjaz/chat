@@ -1,0 +1,30 @@
+
+{
+    "chatApp": {
+        "message" : {
+            "home": {
+                "title": "Messages",
+                "createLabel": "Créer un nouveau Message",
+                "createOrEditLabel": "Créer ou éditer un Message",
+                "search": "Recherche pour Message"
+            },
+            "created": "Un nouveau Message a été créé avec l'identifiant {{ param }}",
+            "updated": "Le Message avec l'identifiant {{ param }} a été mis à jour",
+            "deleted": "Le Message avec l'identifiant {{ param }} a été supprimé",
+            "delete": {
+                "question": "Etes-vous certain de vouloir supprimer le Message {{ id }} ?"
+            },
+            "detail": {
+                "title": "Message"
+            },
+            "text": "Text",
+            "status": "Status",
+            "created": "Created",
+            "updated": "Updated",
+            "sent": "Sent",
+            "chat": "Chat",
+            "writeByClient": "Write By Client",
+            "writeByConseiller": "Write By Conseiller"
+        }
+    }
+}

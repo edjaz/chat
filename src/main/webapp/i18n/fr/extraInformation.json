@@ -1,0 +1,23 @@
+
+{
+    "chatApp": {
+        "extraInformation" : {
+            "home": {
+                "title": "ExtraInformations",
+                "createLabel": "Créer un nouveau Extra Information",
+                "createOrEditLabel": "Créer ou éditer un Extra Information",
+                "search": "Recherche pour Extra Information"
+            },
+            "created": "Un nouveau Extra Information a été créé avec l'identifiant {{ param }}",
+            "updated": "Le Extra Information avec l'identifiant {{ param }} a été mis à jour",
+            "deleted": "Le Extra Information avec l'identifiant {{ param }} a été supprimé",
+            "delete": {
+                "question": "Etes-vous certain de vouloir supprimer le Extra Information {{ id }} ?"
+            },
+            "detail": {
+                "title": "Extra Information"
+            },
+            "extras": "Extras"
+        }
+    }
+}

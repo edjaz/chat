@@ -1,0 +1,67 @@
+<form name="editForm" role="form" novalidate (ngSubmit)="save()" #editForm="ngForm">
+
+    <div class="modal-header">
+        <h4 class="modal-title" id="myChatLabel" jhiTranslate="chatApp.chat.home.createOrEditLabel">Create or edit a Chat</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true"
+                (click)="clear()">&times;</button>
+    </div>
+    <div class="modal-body">
+        <jhi-alert-error></jhi-alert-error>
+        <div class="form-group" [hidden]="!chat.id">
+            <label for="id" jhiTranslate="global.field.id">ID</label>
+            <input type="text" class="form-control" id="id" name="id"
+                   [(ngModel)]="chat.id" readonly />
+        </div>
+        <div class="form-group">
+            <label class="form-control-label" jhiTranslate="chatApp.chat.status" for="field_status">Status</label>
+            <select class="form-control" name="status" [(ngModel)]="chat.status" id="field_status" >
+                <option value="WAITTING">{{'chatApp.ChatStatus.WAITTING' | translate}}</option>
+                <option value="OPENED">{{'chatApp.ChatStatus.OPENED' | translate}}</option>
+                <option value="CLOSED">{{'chatApp.ChatStatus.CLOSED' | translate}}</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-control-label" jhiTranslate="chatApp.chat.created" for="field_created">Created</label>
+            <div class="d-flex">
+                <input id="field_created" type="datetime-local" class="form-control" name="created" [(ngModel)]="chat.created"
+                />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="form-control-label" jhiTranslate="chatApp.chat.opened" for="field_opened">Opened</label>
+            <div class="d-flex">
+                <input id="field_opened" type="datetime-local" class="form-control" name="opened" [(ngModel)]="chat.opened"
+                />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="form-control-label" jhiTranslate="chatApp.chat.closed" for="field_closed">Closed</label>
+            <div class="d-flex">
+                <input id="field_closed" type="datetime-local" class="form-control" name="closed" [(ngModel)]="chat.closed"
+                />
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-control-label" jhiTranslate="chatApp.chat.client" for="field_client">Client</label>
+            <select class="form-control" id="field_client" name="client" [(ngModel)]="chat.clientId" >
+                <option [ngValue]="null"></option>
+                <option [ngValue]="clientOption.id" *ngFor="let clientOption of clients; trackBy: trackClientById">{{clientOption.id}}</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label jhiTranslate="chatApp.chat.conseiller" for="field_conseiller">Conseiller</label>
+            <select class="form-control" id="field_conseiller" multiple name="conseiller" [(ngModel)]="chat.conseillers">
+                <option [ngValue]="getSelected(chat.conseillers, conseillerOption)" *ngFor="let conseillerOption of conseillers; trackBy: trackConseillerById">{{conseillerOption.id}}</option>
+            </select>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal" (click)="clear()">
+            <span class="fa fa-ban"></span>&nbsp;<span jhiTranslate="entity.action.cancel">Cancel</span>
+        </button>
+        <button type="submit" [disabled]="editForm.form.invalid || isSaving" class="btn btn-primary">
+            <span class="fa fa-save"></span>&nbsp;<span jhiTranslate="entity.action.save">Save</span>
+        </button>
+    </div>
+</form>

@@ -1,0 +1,64 @@
+enum ChatStatus {
+  WAITTING,
+  OPENED,
+  CLOSED
+}
+
+enum MessageStatus {
+  IN_PROGRESS,
+  DONE,
+  REMOVED
+}
+
+entity Chat {
+	status ChatStatus
+    created Instant
+    opened Instant
+    closed Instant
+}
+
+entity Client {
+	firstname String
+    lastname String
+    email String
+}
+
+entity ExtraInformation {
+	extras String
+}
+
+entity Conseiller {
+
+}
+
+entity Message {
+	text String
+    status MessageStatus
+    created Instant
+    updated Instant
+    sent Instant
+}
+
+relationship ManyToOne {
+	Message{chat} to Chat
+    Chat{client} to Client
+
+    Message{writeByClient} to Client
+    Message{writeByConseiller} to Conseiller
+
+}
+
+relationship ManyToMany {
+	Chat{conseiller} to Conseiller
+}
+
+relationship OneToOne {
+	Client{extra} to ExtraInformation
+    Conseiller{user} to User
+}
+
+// Set pagination options
+paginate * with pagination
+dto * with mapstruct
+// Set service options to all
+service all with serviceImpl

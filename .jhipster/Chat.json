@@ -1,0 +1,44 @@
+{
+    "fluentMethods": true,
+    "relationships": [
+        {
+            "relationshipType": "many-to-one",
+            "relationshipName": "client",
+            "otherEntityName": "client",
+            "otherEntityField": "id"
+        },
+        {
+            "relationshipType": "many-to-many",
+            "otherEntityRelationshipName": "",
+            "relationshipName": "conseiller",
+            "otherEntityName": "conseiller",
+            "otherEntityField": "id",
+            "ownerSide": true
+        }
+    ],
+    "fields": [
+        {
+            "fieldName": "status",
+            "fieldType": "ChatStatus",
+            "fieldValues": "WAITTING,OPENED,CLOSED"
+        },
+        {
+            "fieldName": "created",
+            "fieldType": "Instant"
+        },
+        {
+            "fieldName": "opened",
+            "fieldType": "Instant"
+        },
+        {
+            "fieldName": "closed",
+            "fieldType": "Instant"
+        }
+    ],
+    "changelogDate": "20180307210530",
+    "entityTableName": "chat",
+    "dto": "mapstruct",
+    "pagination": "pagination",
+    "service": "serviceImpl",
+    "jpaMetamodelFiltering": false
+}

@@ -1,0 +1,23 @@
+
+{
+    "chatApp": {
+        "conseiller" : {
+            "home": {
+                "title": "Conseillers",
+                "createLabel": "Créer un nouveau Conseiller",
+                "createOrEditLabel": "Créer ou éditer un Conseiller",
+                "search": "Recherche pour Conseiller"
+            },
+            "created": "Un nouveau Conseiller a été créé avec l'identifiant {{ param }}",
+            "updated": "Le Conseiller avec l'identifiant {{ param }} a été mis à jour",
+            "deleted": "Le Conseiller avec l'identifiant {{ param }} a été supprimé",
+            "delete": {
+                "question": "Etes-vous certain de vouloir supprimer le Conseiller {{ id }} ?"
+            },
+            "detail": {
+                "title": "Conseiller"
+            },
+            "user": "User"
+        }
+    }
+}

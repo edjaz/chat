@@ -1,0 +1,10 @@
+{
+    "chatApp": {
+        "ChatStatus" : {
+            "null": "",
+            "WAITTING": "WAITTING",
+            "OPENED": "OPENED",
+            "CLOSED": "CLOSED"
+        }
+    }
+}

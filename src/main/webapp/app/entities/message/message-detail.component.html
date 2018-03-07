@@ -1,0 +1,60 @@
+
+<div *ngIf="message">
+    <h2><span jhiTranslate="chatApp.message.detail.title">Message</span> {{message.id}}</h2>
+    <hr>
+    <jhi-alert-error></jhi-alert-error>
+    <dl class="row-md jh-entity-details">
+        <dt><span jhiTranslate="chatApp.message.text">Text</span></dt>
+        <dd>
+            <span>{{message.text}}</span>
+        </dd>
+        <dt><span jhiTranslate="chatApp.message.status">Status</span></dt>
+        <dd>
+            <span jhiTranslate="{{'chatApp.MessageStatus.' + message.status}}">{{message.status}}</span>
+        </dd>
+        <dt><span jhiTranslate="chatApp.message.created">Created</span></dt>
+        <dd>
+            <span>{{message.created | date:'medium'}}</span>
+        </dd>
+        <dt><span jhiTranslate="chatApp.message.updated">Updated</span></dt>
+        <dd>
+            <span>{{message.updated | date:'medium'}}</span>
+        </dd>
+        <dt><span jhiTranslate="chatApp.message.sent">Sent</span></dt>
+        <dd>
+            <span>{{message.sent | date:'medium'}}</span>
+        </dd>
+        <dt><span jhiTranslate="chatApp.message.chat">Chat</span></dt>
+        <dd>
+            <div *ngIf="message.chatId">
+                <a [routerLink]="['/chat', message.chatId]">{{message.chatId}}</a>
+            </div>
+        </dd>
+        <dt><span jhiTranslate="chatApp.message.writeByClient">Write By Client</span></dt>
+        <dd>
+            <div *ngIf="message.writeByClientId">
+                <a [routerLink]="['/client', message.writeByClientId]">{{message.writeByClientId}}</a>
+            </div>
+        </dd>
+        <dt><span jhiTranslate="chatApp.message.writeByConseiller">Write By Conseiller</span></dt>
+        <dd>
+            <div *ngIf="message.writeByConseillerId">
+                <a [routerLink]="['/conseiller', message.writeByConseillerId]">{{message.writeByConseillerId}}</a>
+            </div>
+        </dd>
+    </dl>
+
+    <button type="submit"
+            (click)="previousState()"
+            class="btn btn-info">
+        <span class="fa fa-arrow-left"></span>&nbsp;<span jhiTranslate="entity.action.back"> Back</span>
+    </button>
+
+    <button type="button"
+            [routerLink]="['/', { outlets: { popup: 'message/'+ message.id + '/edit'} }]"
+            replaceUrl="true"
+            queryParamsHandling="merge"
+            class="btn btn-primary">
+        <span class="fa fa-pencil"></span>&nbsp;<span jhiTranslate="entity.action.edit"> Edit</span>
+    </button>
+</div>

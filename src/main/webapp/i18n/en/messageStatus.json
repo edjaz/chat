@@ -1,0 +1,10 @@
+{
+    "chatApp": {
+        "MessageStatus" : {
+            "null": "",
+            "IN_PROGRESS": "IN_PROGRESS",
+            "DONE": "DONE",
+            "REMOVED": "REMOVED"
+        }
+    }
+}

@@ -1,0 +1,40 @@
+
+<div *ngIf="client">
+    <h2><span jhiTranslate="chatApp.client.detail.title">Client</span> {{client.id}}</h2>
+    <hr>
+    <jhi-alert-error></jhi-alert-error>
+    <dl class="row-md jh-entity-details">
+        <dt><span jhiTranslate="chatApp.client.firstname">Firstname</span></dt>
+        <dd>
+            <span>{{client.firstname}}</span>
+        </dd>
+        <dt><span jhiTranslate="chatApp.client.lastname">Lastname</span></dt>
+        <dd>
+            <span>{{client.lastname}}</span>
+        </dd>
+        <dt><span jhiTranslate="chatApp.client.email">Email</span></dt>
+        <dd>
+            <span>{{client.email}}</span>
+        </dd>
+        <dt><span jhiTranslate="chatApp.client.extra">Extra</span></dt>
+        <dd>
+            <div *ngIf="client.extraId">
+                <a [routerLink]="['/extra-information', client.extraId]">{{client.extraId}}</a>
+            </div>
+        </dd>
+    </dl>
+
+    <button type="submit"
+            (click)="previousState()"
+            class="btn btn-info">
+        <span class="fa fa-arrow-left"></span>&nbsp;<span jhiTranslate="entity.action.back"> Back</span>
+    </button>
+
+    <button type="button"
+            [routerLink]="['/', { outlets: { popup: 'client/'+ client.id + '/edit'} }]"
+            replaceUrl="true"
+            queryParamsHandling="merge"
+            class="btn btn-primary">
+        <span class="fa fa-pencil"></span>&nbsp;<span jhiTranslate="entity.action.edit"> Edit</span>
+    </button>
+</div>

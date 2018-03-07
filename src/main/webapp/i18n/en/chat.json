@@ -1,0 +1,28 @@
+
+{
+    "chatApp": {
+        "chat" : {
+            "home": {
+                "title": "Chats",
+                "createLabel": "Create a new Chat",
+                "createOrEditLabel": "Create or edit a Chat",
+                "search": "Search for Chat"
+            },
+            "created": "A new Chat is created with identifier {{ param }}",
+            "updated": "A Chat is updated with identifier {{ param }}",
+            "deleted": "A Chat is deleted with identifier {{ param }}",
+            "delete": {
+                "question": "Are you sure you want to delete Chat {{ id }}?"
+            },
+            "detail": {
+                "title": "Chat"
+            },
+            "status": "Status",
+            "created": "Created",
+            "opened": "Opened",
+            "closed": "Closed",
+            "client": "Client",
+            "conseiller": "Conseiller"
+        }
+    }
+}

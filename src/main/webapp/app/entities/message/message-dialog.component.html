@@ -1,0 +1,80 @@
+<form name="editForm" role="form" novalidate (ngSubmit)="save()" #editForm="ngForm">
+
+    <div class="modal-header">
+        <h4 class="modal-title" id="myMessageLabel" jhiTranslate="chatApp.message.home.createOrEditLabel">Create or edit a Message</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true"
+                (click)="clear()">&times;</button>
+    </div>
+    <div class="modal-body">
+        <jhi-alert-error></jhi-alert-error>
+        <div class="form-group" [hidden]="!message.id">
+            <label for="id" jhiTranslate="global.field.id">ID</label>
+            <input type="text" class="form-control" id="id" name="id"
+                   [(ngModel)]="message.id" readonly />
+        </div>
+        <div class="form-group">
+            <label class="form-control-label" jhiTranslate="chatApp.message.text" for="field_text">Text</label>
+            <input type="text" class="form-control" name="text" id="field_text"
+                [(ngModel)]="message.text" />
+        </div>
+        <div class="form-group">
+            <label class="form-control-label" jhiTranslate="chatApp.message.status" for="field_status">Status</label>
+            <select class="form-control" name="status" [(ngModel)]="message.status" id="field_status" >
+                <option value="IN_PROGRESS">{{'chatApp.MessageStatus.IN_PROGRESS' | translate}}</option>
+                <option value="DONE">{{'chatApp.MessageStatus.DONE' | translate}}</option>
+                <option value="REMOVED">{{'chatApp.MessageStatus.REMOVED' | translate}}</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-control-label" jhiTranslate="chatApp.message.created" for="field_created">Created</label>
+            <div class="d-flex">
+                <input id="field_created" type="datetime-local" class="form-control" name="created" [(ngModel)]="message.created"
+                />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="form-control-label" jhiTranslate="chatApp.message.updated" for="field_updated">Updated</label>
+            <div class="d-flex">
+                <input id="field_updated" type="datetime-local" class="form-control" name="updated" [(ngModel)]="message.updated"
+                />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="form-control-label" jhiTranslate="chatApp.message.sent" for="field_sent">Sent</label>
+            <div class="d-flex">
+                <input id="field_sent" type="datetime-local" class="form-control" name="sent" [(ngModel)]="message.sent"
+                />
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-control-label" jhiTranslate="chatApp.message.chat" for="field_chat">Chat</label>
+            <select class="form-control" id="field_chat" name="chat" [(ngModel)]="message.chatId" >
+                <option [ngValue]="null"></option>
+                <option [ngValue]="chatOption.id" *ngFor="let chatOption of chats; trackBy: trackChatById">{{chatOption.id}}</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-control-label" jhiTranslate="chatApp.message.writeByClient" for="field_writeByClient">Write By Client</label>
+            <select class="form-control" id="field_writeByClient" name="writeByClient" [(ngModel)]="message.writeByClientId" >
+                <option [ngValue]="null"></option>
+                <option [ngValue]="clientOption.id" *ngFor="let clientOption of clients; trackBy: trackClientById">{{clientOption.id}}</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-control-label" jhiTranslate="chatApp.message.writeByConseiller" for="field_writeByConseiller">Write By Conseiller</label>
+            <select class="form-control" id="field_writeByConseiller" name="writeByConseiller" [(ngModel)]="message.writeByConseillerId" >
+                <option [ngValue]="null"></option>
+                <option [ngValue]="conseillerOption.id" *ngFor="let conseillerOption of conseillers; trackBy: trackConseillerById">{{conseillerOption.id}}</option>
+            </select>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal" (click)="clear()">
+            <span class="fa fa-ban"></span>&nbsp;<span jhiTranslate="entity.action.cancel">Cancel</span>
+        </button>
+        <button type="submit" [disabled]="editForm.form.invalid || isSaving" class="btn btn-primary">
+            <span class="fa fa-save"></span>&nbsp;<span jhiTranslate="entity.action.save">Save</span>
+        </button>
+    </div>
+</form>
