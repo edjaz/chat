@@ -4,6 +4,8 @@ import fr.edjaz.chat.service.dto.ChatDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.Optional;
+
 /**
  * Service Interface for managing Chat.
  */
@@ -51,4 +53,6 @@ public interface ChatService {
     Page<ChatDTO> search(String query, Pageable pageable);
 
     boolean hasFreeChat();
+
+    Optional<ChatDTO> findFreeChat();
 }

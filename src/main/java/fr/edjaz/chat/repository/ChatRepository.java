@@ -22,4 +22,6 @@ public interface ChatRepository extends JpaRepository<Chat, Long> {
 
     Boolean existsByStatus(ChatStatus chatStatus);
 
+    List<Chat> findByStatus(ChatStatus chatStatus);
+
 }

@@ -1,10 +1,10 @@
 package fr.edjaz.chat.service.impl;
 
-import fr.edjaz.chat.domain.enumeration.ChatStatus;
-import fr.edjaz.chat.service.ChatService;
 import fr.edjaz.chat.domain.Chat;
+import fr.edjaz.chat.domain.enumeration.ChatStatus;
 import fr.edjaz.chat.repository.ChatRepository;
 import fr.edjaz.chat.repository.search.ChatSearchRepository;
+import fr.edjaz.chat.service.ChatService;
 import fr.edjaz.chat.service.dto.ChatDTO;
 import fr.edjaz.chat.service.mapper.ChatMapper;
 import org.slf4j.Logger;
@@ -14,8 +14,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
 
-import static org.elasticsearch.index.query.QueryBuilders.*;
+import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
 
 /**
  * Service Implementation for managing Chat.
@@ -97,7 +98,7 @@ public class ChatServiceImpl implements ChatService {
     /**
      * Search for the chat corresponding to the query.
      *
-     * @param query the query of the search
+     * @param query    the query of the search
      * @param pageable the pagination information
      * @return the list of entities
      */
@@ -112,5 +113,11 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public boolean hasFreeChat() {
         return chatRepository.existsByStatus(ChatStatus.WAITTING);
+    }
+
+    @Override
+    public Optional<ChatDTO> findFreeChat() {
+        Chat chat = chatRepository.findByStatus(ChatStatus.WAITTING).stream().findAny().get();
+        return Optional.ofNullable((chat != null) ? chatMapper.toDto(chat) : null);
     }
 }

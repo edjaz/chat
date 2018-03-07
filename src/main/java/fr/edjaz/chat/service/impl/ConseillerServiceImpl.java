@@ -107,4 +107,9 @@ public class ConseillerServiceImpl implements ConseillerService {
         Page<Conseiller> result = conseillerSearchRepository.search(queryStringQuery(query), pageable);
         return result.map(conseillerMapper::toDto);
     }
+
+    @Override
+    public ConseillerDTO findByLogin(String loginConseiller) {
+        return null;
+    }
 }
