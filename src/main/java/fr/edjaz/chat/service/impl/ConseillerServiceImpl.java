@@ -77,7 +77,7 @@ public class ConseillerServiceImpl implements ConseillerService {
     @Transactional(readOnly = true)
     public ConseillerDTO findOne(Long id) {
         log.debug("Request to get Conseiller : {}", id);
-        Conseiller conseiller = conseillerRepository.findOne(id);
+        Conseiller conseiller = conseillerRepository.findById(id).get();
         return conseillerMapper.toDto(conseiller);
     }
 
@@ -89,8 +89,8 @@ public class ConseillerServiceImpl implements ConseillerService {
     @Override
     public void delete(Long id) {
         log.debug("Request to delete Conseiller : {}", id);
-        conseillerRepository.delete(id);
-        conseillerSearchRepository.delete(id);
+        conseillerRepository.deleteById(id);
+        conseillerSearchRepository.deleteById(id);
     }
 
     /**

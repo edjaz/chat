@@ -77,7 +77,7 @@ public class ClientServiceImpl implements ClientService {
     @Transactional(readOnly = true)
     public ClientDTO findOne(Long id) {
         log.debug("Request to get Client : {}", id);
-        Client client = clientRepository.findOne(id);
+        Client client = clientRepository.findById(id).get();
         return clientMapper.toDto(client);
     }
 
@@ -89,8 +89,8 @@ public class ClientServiceImpl implements ClientService {
     @Override
     public void delete(Long id) {
         log.debug("Request to delete Client : {}", id);
-        clientRepository.delete(id);
-        clientSearchRepository.delete(id);
+        clientRepository.deleteById(id);
+        clientSearchRepository.deleteById(id);
     }
 
     /**

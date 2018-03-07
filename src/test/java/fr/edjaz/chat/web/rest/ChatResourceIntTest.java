@@ -19,6 +19,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.integration.channel.PublishSubscribeChannel;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -81,6 +82,9 @@ public class ChatResourceIntTest {
     @Autowired
     private EntityManager em;
 
+    @Autowired
+    private PublishSubscribeChannel hasFreeChat;
+
     private MockMvc restChatMockMvc;
 
     private Chat chat;
@@ -88,7 +92,7 @@ public class ChatResourceIntTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final ChatResource chatResource = new ChatResource(chatService);
+        final ChatResource chatResource = new ChatResource(chatService, hasFreeChat);
         this.restChatMockMvc = MockMvcBuilders.standaloneSetup(chatResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -139,7 +143,7 @@ public class ChatResourceIntTest {
         assertThat(testChat.getClosed()).isEqualTo(DEFAULT_CLOSED);
 
         // Validate the Chat in Elasticsearch
-        Chat chatEs = chatSearchRepository.findOne(testChat.getId());
+        Chat chatEs = chatSearchRepository.findById(testChat.getId()).get();
         assertThat(chatEs).isEqualToIgnoringGivenFields(testChat);
     }
 
@@ -214,7 +218,7 @@ public class ChatResourceIntTest {
         int databaseSizeBeforeUpdate = chatRepository.findAll().size();
 
         // Update the chat
-        Chat updatedChat = chatRepository.findOne(chat.getId());
+        Chat updatedChat = chatRepository.findById(chat.getId()).get();
         // Disconnect from session so that the updates on updatedChat are not directly saved in db
         em.detach(updatedChat);
         updatedChat
@@ -239,7 +243,7 @@ public class ChatResourceIntTest {
         assertThat(testChat.getClosed()).isEqualTo(UPDATED_CLOSED);
 
         // Validate the Chat in Elasticsearch
-        Chat chatEs = chatSearchRepository.findOne(testChat.getId());
+        Chat chatEs = chatSearchRepository.findById(testChat.getId()).get();
         assertThat(chatEs).isEqualToIgnoringGivenFields(testChat);
     }
 
@@ -276,7 +280,7 @@ public class ChatResourceIntTest {
             .andExpect(status().isOk());
 
         // Validate Elasticsearch is empty
-        boolean chatExistsInEs = chatSearchRepository.exists(chat.getId());
+        boolean chatExistsInEs = chatSearchRepository.existsById(chat.getId());
         assertThat(chatExistsInEs).isFalse();
 
         // Validate the database is empty

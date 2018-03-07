@@ -77,7 +77,7 @@ public class ExtraInformationServiceImpl implements ExtraInformationService {
     @Transactional(readOnly = true)
     public ExtraInformationDTO findOne(Long id) {
         log.debug("Request to get ExtraInformation : {}", id);
-        ExtraInformation extraInformation = extraInformationRepository.findOne(id);
+        ExtraInformation extraInformation = extraInformationRepository.findById(id).get();
         return extraInformationMapper.toDto(extraInformation);
     }
 
@@ -89,8 +89,8 @@ public class ExtraInformationServiceImpl implements ExtraInformationService {
     @Override
     public void delete(Long id) {
         log.debug("Request to delete ExtraInformation : {}", id);
-        extraInformationRepository.delete(id);
-        extraInformationSearchRepository.delete(id);
+        extraInformationRepository.deleteById(id);
+        extraInformationSearchRepository.deleteById(id);
     }
 
     /**

@@ -3,12 +3,19 @@ package fr.edjaz.chat.config;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import fr.edjaz.chat.messaging.ConsumerChannel;
+import fr.edjaz.chat.messaging.Message;
+import fr.edjaz.chat.messaging.ProducerChannel;
 import org.springframework.cloud.stream.annotation.EnableBinding;
+import org.springframework.cloud.stream.annotation.StreamListener;
 import org.springframework.cloud.stream.messaging.Source;
 import org.springframework.context.annotation.Bean;
 import org.springframework.integration.annotation.InboundChannelAdapter;
+import org.springframework.integration.channel.PublishSubscribeChannel;
 import org.springframework.integration.core.MessageSource;
+import org.springframework.integration.dsl.channel.MessageChannels;
 import org.springframework.messaging.support.GenericMessage;
+import org.springframework.messaging.support.MessageBuilder;
 
 /**
  * Configures Spring Cloud Stream support.
@@ -21,6 +28,12 @@ import org.springframework.messaging.support.GenericMessage;
 @EnableBinding(value = { Source.class })
 public class MessagingConfiguration {
 
+    private final ProducerChannel producerChannel;
+
+    public MessagingConfiguration(ProducerChannel producerChannel) {
+        this.producerChannel = producerChannel;
+    }
+
     /**
      * This sends a test message at regular intervals.
      *
@@ -32,5 +45,16 @@ public class MessagingConfiguration {
     public MessageSource<String> timerMessageSource() {
         return () -> new GenericMessage<>("Test message from JHipster sent at " +
             new SimpleDateFormat().format(new Date()));
+    }
+
+    @Bean
+    public PublishSubscribeChannel subscribeChannel(){
+        return MessageChannels.publishSubscribe().get();
+    }
+
+    @StreamListener(ConsumerChannel.CHANNEL)
+    public void consume(Message message) {
+        subscribeChannel().send(MessageBuilder.withPayload(message).build());
+
     }
 }

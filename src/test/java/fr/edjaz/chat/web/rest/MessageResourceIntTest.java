@@ -144,7 +144,7 @@ public class MessageResourceIntTest {
         assertThat(testMessage.getSent()).isEqualTo(DEFAULT_SENT);
 
         // Validate the Message in Elasticsearch
-        Message messageEs = messageSearchRepository.findOne(testMessage.getId());
+        Message messageEs = messageSearchRepository.findById(testMessage.getId()).get();
         assertThat(messageEs).isEqualToIgnoringGivenFields(testMessage);
     }
 
@@ -221,7 +221,7 @@ public class MessageResourceIntTest {
         int databaseSizeBeforeUpdate = messageRepository.findAll().size();
 
         // Update the message
-        Message updatedMessage = messageRepository.findOne(message.getId());
+        Message updatedMessage = messageRepository.findById(message.getId()).get();
         // Disconnect from session so that the updates on updatedMessage are not directly saved in db
         em.detach(updatedMessage);
         updatedMessage
@@ -248,7 +248,7 @@ public class MessageResourceIntTest {
         assertThat(testMessage.getSent()).isEqualTo(UPDATED_SENT);
 
         // Validate the Message in Elasticsearch
-        Message messageEs = messageSearchRepository.findOne(testMessage.getId());
+        Message messageEs = messageSearchRepository.findById(testMessage.getId()).get();
         assertThat(messageEs).isEqualToIgnoringGivenFields(testMessage);
     }
 
@@ -285,7 +285,7 @@ public class MessageResourceIntTest {
             .andExpect(status().isOk());
 
         // Validate Elasticsearch is empty
-        boolean messageExistsInEs = messageSearchRepository.exists(message.getId());
+        boolean messageExistsInEs = messageSearchRepository.existsById(message.getId());
         assertThat(messageExistsInEs).isFalse();
 
         // Validate the database is empty

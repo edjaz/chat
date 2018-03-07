@@ -1,5 +1,6 @@
 package fr.edjaz.chat.service.impl;
 
+import fr.edjaz.chat.domain.enumeration.ChatStatus;
 import fr.edjaz.chat.service.ChatService;
 import fr.edjaz.chat.domain.Chat;
 import fr.edjaz.chat.repository.ChatRepository;
@@ -89,8 +90,8 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public void delete(Long id) {
         log.debug("Request to delete Chat : {}", id);
-        chatRepository.delete(id);
-        chatSearchRepository.delete(id);
+        chatRepository.deleteById(id);
+        chatSearchRepository.deleteById(id);
     }
 
     /**
@@ -106,5 +107,10 @@ public class ChatServiceImpl implements ChatService {
         log.debug("Request to search for a page of Chats for query {}", query);
         Page<Chat> result = chatSearchRepository.search(queryStringQuery(query), pageable);
         return result.map(chatMapper::toDto);
+    }
+
+    @Override
+    public boolean hasFreeChat() {
+        return chatRepository.existsByStatus(ChatStatus.WAITTING);
     }
 }

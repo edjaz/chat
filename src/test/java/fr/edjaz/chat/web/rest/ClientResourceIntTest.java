@@ -131,7 +131,7 @@ public class ClientResourceIntTest {
         assertThat(testClient.getEmail()).isEqualTo(DEFAULT_EMAIL);
 
         // Validate the Client in Elasticsearch
-        Client clientEs = clientSearchRepository.findOne(testClient.getId());
+        Client clientEs = clientSearchRepository.findById(testClient.getId()).get();
         assertThat(clientEs).isEqualToIgnoringGivenFields(testClient);
     }
 
@@ -204,7 +204,7 @@ public class ClientResourceIntTest {
         int databaseSizeBeforeUpdate = clientRepository.findAll().size();
 
         // Update the client
-        Client updatedClient = clientRepository.findOne(client.getId());
+        Client updatedClient = clientRepository.findById(client.getId()).get();
         // Disconnect from session so that the updates on updatedClient are not directly saved in db
         em.detach(updatedClient);
         updatedClient
@@ -227,7 +227,7 @@ public class ClientResourceIntTest {
         assertThat(testClient.getEmail()).isEqualTo(UPDATED_EMAIL);
 
         // Validate the Client in Elasticsearch
-        Client clientEs = clientSearchRepository.findOne(testClient.getId());
+        Client clientEs = clientSearchRepository.findById(testClient.getId()).get();
         assertThat(clientEs).isEqualToIgnoringGivenFields(testClient);
     }
 
@@ -264,7 +264,7 @@ public class ClientResourceIntTest {
             .andExpect(status().isOk());
 
         // Validate Elasticsearch is empty
-        boolean clientExistsInEs = clientSearchRepository.exists(client.getId());
+        boolean clientExistsInEs = clientSearchRepository.existsById(client.getId());
         assertThat(clientExistsInEs).isFalse();
 
         // Validate the database is empty

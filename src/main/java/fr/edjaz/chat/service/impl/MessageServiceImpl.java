@@ -77,7 +77,7 @@ public class MessageServiceImpl implements MessageService {
     @Transactional(readOnly = true)
     public MessageDTO findOne(Long id) {
         log.debug("Request to get Message : {}", id);
-        Message message = messageRepository.findOne(id);
+        Message message = messageRepository.findById(id).get();
         return messageMapper.toDto(message);
     }
 
@@ -89,8 +89,8 @@ public class MessageServiceImpl implements MessageService {
     @Override
     public void delete(Long id) {
         log.debug("Request to delete Message : {}", id);
-        messageRepository.delete(id);
-        messageSearchRepository.delete(id);
+        messageRepository.deleteById(id);
+        messageSearchRepository.deleteById(id);
     }
 
     /**

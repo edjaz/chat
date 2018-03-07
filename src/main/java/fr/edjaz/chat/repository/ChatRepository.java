@@ -1,6 +1,7 @@
 package fr.edjaz.chat.repository;
 
 import fr.edjaz.chat.domain.Chat;
+import fr.edjaz.chat.domain.enumeration.ChatStatus;
 import org.springframework.stereotype.Repository;
 
 import org.springframework.data.jpa.repository.*;
@@ -18,5 +19,7 @@ public interface ChatRepository extends JpaRepository<Chat, Long> {
 
     @Query("select chat from Chat chat left join fetch chat.conseillers where chat.id =:id")
     Chat findOneWithEagerRelationships(@Param("id") Long id);
+
+    Boolean existsByStatus(ChatStatus chatStatus);
 
 }

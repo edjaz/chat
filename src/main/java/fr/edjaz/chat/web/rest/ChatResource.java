@@ -13,17 +13,18 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.codec.ServerSentEvent;
+import org.springframework.integration.channel.PublishSubscribeChannel;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.StreamSupport;
-
-import static org.elasticsearch.index.query.QueryBuilders.*;
 
 /**
  * REST controller for managing Chat.
@@ -38,9 +39,27 @@ public class ChatResource {
 
     private final ChatService chatService;
 
-    public ChatResource(ChatService chatService) {
+    private final PublishSubscribeChannel hasFreeChat;
+
+    public ChatResource(ChatService chatService, PublishSubscribeChannel hasFreeChat) {
         this.chatService = chatService;
+        this.hasFreeChat = hasFreeChat;
     }
+
+
+    @GetMapping(value = "/chats/client/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<ServerSentEvent> subscribeClient(){
+        return Flux.create(sink -> {
+
+            if(chatService.hasFreeChat()){
+                sink.next(ServerSentEvent.builder().event("free").build());
+            }else{
+                hasFreeChat.subscribe(message -> sink.next(ServerSentEvent.builder().event("free").build()));
+            }
+
+        });
+    }
+
 
     /**
      * POST  /chats : Create a new chat.

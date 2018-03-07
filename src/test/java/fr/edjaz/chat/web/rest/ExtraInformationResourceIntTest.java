@@ -121,7 +121,7 @@ public class ExtraInformationResourceIntTest {
         assertThat(testExtraInformation.getExtras()).isEqualTo(DEFAULT_EXTRAS);
 
         // Validate the ExtraInformation in Elasticsearch
-        ExtraInformation extraInformationEs = extraInformationSearchRepository.findOne(testExtraInformation.getId());
+        ExtraInformation extraInformationEs = extraInformationSearchRepository.findById(testExtraInformation.getId()).get();
         assertThat(extraInformationEs).isEqualToIgnoringGivenFields(testExtraInformation);
     }
 
@@ -190,7 +190,7 @@ public class ExtraInformationResourceIntTest {
         int databaseSizeBeforeUpdate = extraInformationRepository.findAll().size();
 
         // Update the extraInformation
-        ExtraInformation updatedExtraInformation = extraInformationRepository.findOne(extraInformation.getId());
+        ExtraInformation updatedExtraInformation = extraInformationRepository.findById(extraInformation.getId()).get();
         // Disconnect from session so that the updates on updatedExtraInformation are not directly saved in db
         em.detach(updatedExtraInformation);
         updatedExtraInformation
@@ -209,7 +209,7 @@ public class ExtraInformationResourceIntTest {
         assertThat(testExtraInformation.getExtras()).isEqualTo(UPDATED_EXTRAS);
 
         // Validate the ExtraInformation in Elasticsearch
-        ExtraInformation extraInformationEs = extraInformationSearchRepository.findOne(testExtraInformation.getId());
+        ExtraInformation extraInformationEs = extraInformationSearchRepository.findById(testExtraInformation.getId()).get();
         assertThat(extraInformationEs).isEqualToIgnoringGivenFields(testExtraInformation);
     }
 
@@ -246,7 +246,7 @@ public class ExtraInformationResourceIntTest {
             .andExpect(status().isOk());
 
         // Validate Elasticsearch is empty
-        boolean extraInformationExistsInEs = extraInformationSearchRepository.exists(extraInformation.getId());
+        boolean extraInformationExistsInEs = extraInformationSearchRepository.existsById(extraInformation.getId());
         assertThat(extraInformationExistsInEs).isFalse();
 
         // Validate the database is empty

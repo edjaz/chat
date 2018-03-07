@@ -116,7 +116,7 @@ public class ConseillerResourceIntTest {
         Conseiller testConseiller = conseillerList.get(conseillerList.size() - 1);
 
         // Validate the Conseiller in Elasticsearch
-        Conseiller conseillerEs = conseillerSearchRepository.findOne(testConseiller.getId());
+        Conseiller conseillerEs = conseillerSearchRepository.findById(testConseiller.getId()).get();
         assertThat(conseillerEs).isEqualToIgnoringGivenFields(testConseiller);
     }
 
@@ -183,7 +183,7 @@ public class ConseillerResourceIntTest {
         int databaseSizeBeforeUpdate = conseillerRepository.findAll().size();
 
         // Update the conseiller
-        Conseiller updatedConseiller = conseillerRepository.findOne(conseiller.getId());
+        Conseiller updatedConseiller = conseillerRepository.findById(conseiller.getId()).get();
         // Disconnect from session so that the updates on updatedConseiller are not directly saved in db
         em.detach(updatedConseiller);
         ConseillerDTO conseillerDTO = conseillerMapper.toDto(updatedConseiller);
@@ -199,7 +199,7 @@ public class ConseillerResourceIntTest {
         Conseiller testConseiller = conseillerList.get(conseillerList.size() - 1);
 
         // Validate the Conseiller in Elasticsearch
-        Conseiller conseillerEs = conseillerSearchRepository.findOne(testConseiller.getId());
+        Conseiller conseillerEs = conseillerSearchRepository.findById(testConseiller.getId()).get();
         assertThat(conseillerEs).isEqualToIgnoringGivenFields(testConseiller);
     }
 
@@ -236,7 +236,7 @@ public class ConseillerResourceIntTest {
             .andExpect(status().isOk());
 
         // Validate Elasticsearch is empty
-        boolean conseillerExistsInEs = conseillerSearchRepository.exists(conseiller.getId());
+        boolean conseillerExistsInEs = conseillerSearchRepository.existsById(conseiller.getId());
         assertThat(conseillerExistsInEs).isFalse();
 
         // Validate the database is empty
