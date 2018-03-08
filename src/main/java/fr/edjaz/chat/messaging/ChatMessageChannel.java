@@ -6,21 +6,16 @@ import org.springframework.integration.channel.PublishSubscribeChannel;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.SubscribableChannel;
 
-public interface OpenChatChannel {
+public interface ChatMessageChannel {
+    @Input
+    SubscribableChannel waitClient();
 
     @Input
-    SubscribableChannel hasFreeChat();
-
-    @Input
-    SubscribableChannel waitClientSubscribe();
-
-    @Input
-    SubscribableChannel waitForFreeChat();
+    SubscribableChannel waitConseiller();
 
     @Output
-    MessageChannel openChat();
+    MessageChannel sendToClient();
 
     @Output
-    MessageChannel conseillerFreeForChat();
-
+    MessageChannel sendToConseiller();
 }

@@ -1,11 +1,23 @@
 package fr.edjaz.chat.web.rest;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
+
 import com.codahale.metrics.annotation.Timed;
+import fr.edjaz.chat.domain.enumeration.MessageStatus;
+import fr.edjaz.chat.messaging.ChatMessageChannel;
+import fr.edjaz.chat.security.SecurityUtils;
+import fr.edjaz.chat.service.ConseillerService;
 import fr.edjaz.chat.service.MessageService;
+import fr.edjaz.chat.service.dto.ConseillerDTO;
+import fr.edjaz.chat.service.dto.MessageDTO;
 import fr.edjaz.chat.web.rest.errors.BadRequestAlertException;
 import fr.edjaz.chat.web.rest.util.HeaderUtil;
 import fr.edjaz.chat.web.rest.util.PaginationUtil;
-import fr.edjaz.chat.service.dto.MessageDTO;
+import fr.edjaz.chat.web.rest.vm.MessageClientVM;
 import io.github.jhipster.web.util.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,16 +26,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.codec.ServerSentEvent;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.web.bind.annotation.*;
-
-import java.net.URI;
-import java.net.URISyntaxException;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.StreamSupport;
-
-import static org.elasticsearch.index.query.QueryBuilders.*;
+import reactor.core.publisher.Flux;
 
 /**
  * REST controller for managing Message.
@@ -38,9 +44,90 @@ public class MessageResource {
 
     private final MessageService messageService;
 
-    public MessageResource(MessageService messageService) {
+    private final ChatMessageChannel chatMessageChannel;
+
+    private final ConseillerService conseillerService;
+
+    public MessageResource(MessageService messageService, ChatMessageChannel chatMessageChannel, ConseillerService conseillerService) {
         this.messageService = messageService;
+        this.chatMessageChannel = chatMessageChannel;
+        this.conseillerService = conseillerService;
     }
+
+
+    @PostMapping("/chats/{idChat}/client/{idClient}/messages")
+    @Timed
+    public void sendClientMessage(@PathVariable Long idChat, @PathVariable Long idClient, @RequestBody MessageClientVM message) throws URISyntaxException {
+        log.debug("REST request to save Message : {}", message);
+
+
+        MessageDTO messageDTO = new MessageDTO();
+
+        if (message.getId() == null) {
+            messageDTO.setId(message.getId());
+        }
+
+        messageDTO.setChatId(idChat);
+        messageDTO.setCreated(Instant.now());
+        if (message.isValidated()) {
+            messageDTO.setSent(Instant.now());
+            messageDTO.setStatus(MessageStatus.DONE);
+        } else {
+            messageDTO.setStatus(MessageStatus.IN_PROGRESS);
+        }
+        messageDTO.setWriteByClientId(idClient);
+
+        messageDTO = messageService.save(messageDTO);
+
+        chatMessageChannel.sendToConseiller().send(MessageBuilder.withPayload(messageDTO).build());
+    }
+
+
+    @PostMapping("/chats/{idChat}/conseiller/messages")
+    @Timed
+    public void sendConseillerMessage(@PathVariable Long idChat, @RequestBody MessageClientVM message) throws URISyntaxException {
+        log.debug("REST request to save Message : {}", message);
+
+        Optional<String> currentUserLogin = SecurityUtils.getCurrentUserLogin();
+        ConseillerDTO conseiller = conseillerService.findByLogin(currentUserLogin.get());
+
+        MessageDTO messageDTO = new MessageDTO();
+
+        messageDTO.setChatId(idChat);
+        messageDTO.setCreated(Instant.now());
+        messageDTO.setSent(Instant.now());
+        messageDTO.setStatus(MessageStatus.DONE);
+        messageDTO.setWriteByConseillerId(conseiller.getId());
+
+        messageService.save(messageDTO);
+        chatMessageChannel.sendToClient().send(MessageBuilder.withPayload(messageDTO).build());
+
+    }
+
+
+    @GetMapping("/chats/{idChat}/client/{idClient}/messages")
+    @Timed
+    public Flux<ServerSentEvent<MessageDTO>> clientReadMessage(@PathVariable Long idChat) {
+        return Flux.create(sink -> chatMessageChannel.waitConseiller().subscribe(message -> {
+            MessageDTO msg = (MessageDTO) message.getPayload();
+            if (msg.getChatId().equals(idChat)) {
+                sink.next(ServerSentEvent.builder(msg).build());
+            }
+        }));
+    }
+
+
+    @GetMapping("/chats/{idChat}/conseiller/messages")
+    @Timed
+    public Flux<ServerSentEvent<MessageDTO>> conseillerReadMessage(@PathVariable Long idChat) {
+        return Flux.create(sink -> chatMessageChannel.waitClient().subscribe(message -> {
+            MessageDTO msg = (MessageDTO) message.getPayload();
+            if (msg.getChatId().equals(idChat)) {
+                sink.next(ServerSentEvent.builder(msg).build());
+            }
+        }));
+    }
+
 
     /**
      * POST  /messages : Create a new message.
@@ -131,7 +218,7 @@ public class MessageResource {
      * SEARCH  /_search/messages?query=:query : search for the message corresponding
      * to the query.
      *
-     * @param query the query of the message search
+     * @param query    the query of the message search
      * @param pageable the pagination information
      * @return the result of the search
      */

@@ -1,9 +1,5 @@
 package fr.edjaz.chat.web.rest;
 
-import com.mycompany.myapp.messaging.Message;
-import com.mycompany.myapp.messaging.ProducerChannel;
-import fr.edjaz.chat.messaging.Message;
-import fr.edjaz.chat.messaging.ProducerChannel;
 import org.springframework.http.MediaType;
 import org.springframework.integration.channel.PublishSubscribeChannel;
 import org.springframework.messaging.support.MessageBuilder;
@@ -21,6 +17,7 @@ import java.util.UUID;
 public class TestController {
 
 
+/*
     private final ProducerChannel producerChannel;
     private final PublishSubscribeChannel subscribeChannel;
 
@@ -50,5 +47,6 @@ public class TestController {
 
         producerChannel.messageChannel().send(MessageBuilder.withPayload(msg).build());
     }
+*/
 
 }

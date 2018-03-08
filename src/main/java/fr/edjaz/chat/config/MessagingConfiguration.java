@@ -3,19 +3,14 @@ package fr.edjaz.chat.config;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import fr.edjaz.chat.messaging.ConsumerChannel;
-import fr.edjaz.chat.messaging.Message;
-import fr.edjaz.chat.messaging.ProducerChannel;
+import fr.edjaz.chat.messaging.ChatMessageChannel;
+import fr.edjaz.chat.messaging.OpenChatChannel;
 import org.springframework.cloud.stream.annotation.EnableBinding;
-import org.springframework.cloud.stream.annotation.StreamListener;
 import org.springframework.cloud.stream.messaging.Source;
 import org.springframework.context.annotation.Bean;
 import org.springframework.integration.annotation.InboundChannelAdapter;
-import org.springframework.integration.channel.PublishSubscribeChannel;
 import org.springframework.integration.core.MessageSource;
-import org.springframework.integration.dsl.channel.MessageChannels;
 import org.springframework.messaging.support.GenericMessage;
-import org.springframework.messaging.support.MessageBuilder;
 
 /**
  * Configures Spring Cloud Stream support.
@@ -25,14 +20,9 @@ import org.springframework.messaging.support.MessageBuilder;
  * See http://docs.spring.io/spring-cloud-stream/docs/current/reference/htmlsingle/
  * for the official Spring Cloud Stream documentation.
  */
-@EnableBinding(value = { Source.class })
+@EnableBinding(value = { Source.class , ChatMessageChannel.class, OpenChatChannel.class})
 public class MessagingConfiguration {
 
-    private final ProducerChannel producerChannel;
-
-    public MessagingConfiguration(ProducerChannel producerChannel) {
-        this.producerChannel = producerChannel;
-    }
 
     /**
      * This sends a test message at regular intervals.
@@ -47,7 +37,7 @@ public class MessagingConfiguration {
             new SimpleDateFormat().format(new Date()));
     }
 
-    @Bean
+/*    @Bean
     public PublishSubscribeChannel subscribeChannel(){
         return MessageChannels.publishSubscribe().get();
     }
@@ -56,5 +46,5 @@ public class MessagingConfiguration {
     public void consume(Message message) {
         subscribeChannel().send(MessageBuilder.withPayload(message).build());
 
-    }
+    }*/
 }

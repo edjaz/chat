@@ -1,15 +1,24 @@
 package fr.edjaz.chat.web.rest;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.time.Instant;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
 import com.codahale.metrics.annotation.Timed;
 import fr.edjaz.chat.domain.enumeration.ChatStatus;
 import fr.edjaz.chat.messaging.OpenChatChannel;
 import fr.edjaz.chat.security.SecurityUtils;
 import fr.edjaz.chat.service.ChatService;
+import fr.edjaz.chat.service.ClientService;
 import fr.edjaz.chat.service.ConseillerService;
+import fr.edjaz.chat.service.dto.ChatDTO;
+import fr.edjaz.chat.service.dto.ClientDTO;
 import fr.edjaz.chat.web.rest.errors.BadRequestAlertException;
 import fr.edjaz.chat.web.rest.util.HeaderUtil;
 import fr.edjaz.chat.web.rest.util.PaginationUtil;
-import fr.edjaz.chat.service.dto.ChatDTO;
 import io.github.jhipster.web.util.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,19 +29,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.ServerSentEvent;
-import org.springframework.integration.channel.PublishSubscribeChannel;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.net.URI;
-import java.net.URISyntaxException;
-
-import java.time.Instant;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
 
 /**
  * REST controller for managing Chat.
@@ -49,27 +49,27 @@ public class ChatResource {
 
     private final ConseillerService conseillerService;
 
-    private final PublishSubscribeChannel hasFreeChat;
-
     private final OpenChatChannel openChatChannel;
 
-    public ChatResource(ChatService chatService, ConseillerService conseillerService, PublishSubscribeChannel hasFreeChat, OpenChatChannel openChatChannel) {
+    private final ClientService clientService;
+
+    public ChatResource(ChatService chatService, ConseillerService conseillerService, OpenChatChannel openChatChannel, ClientService clientService) {
         this.chatService = chatService;
         this.conseillerService = conseillerService;
-        this.hasFreeChat = hasFreeChat;
         this.openChatChannel = openChatChannel;
+        this.clientService = clientService;
     }
 
 
     @GetMapping(value = "/chats/client/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<ServerSentEvent> subscribeClient(){
+    public Flux<ServerSentEvent> subscribeClient() {
         return Flux.create(sink -> {
 
-            if(chatService.hasFreeChat()){
+            if (chatService.hasFreeChat()) {
                 sink.next(ServerSentEvent.builder().event("free").build());
-            }else{
+            } else {
                 sink.next(ServerSentEvent.builder().event("notAvailable").build());
-                hasFreeChat.subscribe(message -> sink.next(ServerSentEvent.builder().event("free").build()));
+                openChatChannel.hasFreeChat().subscribe(message -> sink.next(ServerSentEvent.builder().event("free").build()));
             }
 
         });
@@ -77,21 +77,36 @@ public class ChatResource {
 
 
     @GetMapping(value = "/chats/client/open", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Mono<ChatDTO> openClient(){
+    public Mono<ChatDTO> openClient() {
+
         return Mono.create(sink -> {
             Optional<ChatDTO> freeChat = chatService.findFreeChat();
-            if(freeChat.isPresent()){
-                openChatChannel.messageChannel().send(MessageBuilder.withPayload(freeChat.get()).build());
-                sink.success(freeChat.get());
-            }else{
-                // TODO : wait free chat
+
+            ClientDTO client = new ClientDTO();
+            client = clientService.save(client);
+
+            if (freeChat.isPresent()) {
+                ChatDTO chatDTO = freeChat.get();
+                chatDTO.setClientId(client.getId());
+                chatService.save(chatDTO);
+                openChatChannel.openChat().send(MessageBuilder.withPayload(chatDTO).build());
+                sink.success(chatDTO);
+            } else {
+
+                ClientDTO finalClient = client;
+                openChatChannel.waitForFreeChat().subscribe(message -> {
+                    ChatDTO chatDTO = (ChatDTO) message.getPayload();
+                    chatDTO.setClientId(finalClient.getId());
+                    chatDTO = chatService.save(chatDTO);
+                    sink.success(chatDTO);
+                });
             }
         });
     }
 
 
     @GetMapping(value = "/chats/conseiller/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Mono<ChatDTO> subscribeConseiller(){
+    public Mono<ChatDTO> subscribeConseiller() {
         return Mono.create(sink -> {
             // 1. create new chat
 
@@ -103,8 +118,9 @@ public class ChatResource {
             chatDTO.setStatus(ChatStatus.WAITTING);
             chatDTO = chatService.save(chatDTO);
 
+            openChatChannel.conseillerFreeForChat().send(MessageBuilder.withPayload(chatDTO).build());
             // 2.wait un Client
-            openChatChannel.subscribableChannel().subscribe(message -> sink.success((ChatDTO) message.getPayload()));
+            openChatChannel.waitClientSubscribe().subscribe(message -> sink.success((ChatDTO) message.getPayload()));
         });
     }
 
@@ -198,7 +214,7 @@ public class ChatResource {
      * SEARCH  /_search/chats?query=:query : search for the chat corresponding
      * to the query.
      *
-     * @param query the query of the chat search
+     * @param query    the query of the chat search
      * @param pageable the pagination information
      * @return the result of the search
      */

@@ -39,6 +39,39 @@ spring:
             bindings:
                 output:
                     destination: topic-jhipster
+
+                waitForFreeChat:
+                    destination: chat
+                    content-type: application/json
+
+                waitClientSubscribe:
+                    destination: chat
+                openChat:
+                    destination: chat
+                    content-type: application/json
+
+                hasFreeChat:
+                    destination: chatSubscribe
+                    content-type: application/json
+                conseillerFreeForChat:
+                    destination: chatSubscribe
+                    content-type: application/json
+
+                waitClient:
+                    destination: messageClient
+                    content-type: application/json
+                sendToConseiller:
+                    destination: messageClient
+                    content-type: application/json
+
+                waitConseiller:
+                    destination: messageConseiller
+                    content-type: application/json
+                sendToClient:
+                    destination: messageConseiller
+                    content-type: application/json
+
+
     datasource:
         type: com.zaxxer.hikari.HikariDataSource
         url: jdbc:h2:file:./build/h2db/db/chat;DB_CLOSE_DELAY=-1
