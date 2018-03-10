@@ -2,15 +2,14 @@ import { Injectable } from '@angular/core';
 import { Resolve, ActivatedRouteSnapshot, RouterStateSnapshot, Routes } from '@angular/router';
 import { JhiPaginationUtil } from 'ng-jhipster';
 
-import { UserRouteAccessService } from '../../shared';
 import { ConseillerComponent } from './conseiller.component';
 import { ConseillerDetailComponent } from './conseiller-detail.component';
 import { ConseillerPopupComponent } from './conseiller-dialog.component';
 import { ConseillerDeletePopupComponent } from './conseiller-delete-dialog.component';
+import { UserRouteAccessService } from 'app/core';
 
 @Injectable()
 export class ConseillerResolvePagingParams implements Resolve<any> {
-
     constructor(private paginationUtil: JhiPaginationUtil) {}
 
     resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
@@ -20,7 +19,7 @@ export class ConseillerResolvePagingParams implements Resolve<any> {
             page: this.paginationUtil.parsePage(page),
             predicate: this.paginationUtil.parsePredicate(sort),
             ascending: this.paginationUtil.parseAscending(sort)
-      };
+        };
     }
 }
 
@@ -29,14 +28,15 @@ export const conseillerRoute: Routes = [
         path: 'conseiller',
         component: ConseillerComponent,
         resolve: {
-            'pagingParams': ConseillerResolvePagingParams
+            pagingParams: ConseillerResolvePagingParams
         },
         data: {
             authorities: ['ROLE_USER'],
             pageTitle: 'chatApp.conseiller.home.title'
         },
         canActivate: [UserRouteAccessService]
-    }, {
+    },
+    {
         path: 'conseiller/:id',
         component: ConseillerDetailComponent,
         data: {

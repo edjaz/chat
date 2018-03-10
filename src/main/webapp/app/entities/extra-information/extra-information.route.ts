@@ -2,15 +2,14 @@ import { Injectable } from '@angular/core';
 import { Resolve, ActivatedRouteSnapshot, RouterStateSnapshot, Routes } from '@angular/router';
 import { JhiPaginationUtil } from 'ng-jhipster';
 
-import { UserRouteAccessService } from '../../shared';
 import { ExtraInformationComponent } from './extra-information.component';
 import { ExtraInformationDetailComponent } from './extra-information-detail.component';
 import { ExtraInformationPopupComponent } from './extra-information-dialog.component';
 import { ExtraInformationDeletePopupComponent } from './extra-information-delete-dialog.component';
+import { UserRouteAccessService } from 'app/core';
 
 @Injectable()
 export class ExtraInformationResolvePagingParams implements Resolve<any> {
-
     constructor(private paginationUtil: JhiPaginationUtil) {}
 
     resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
@@ -20,7 +19,7 @@ export class ExtraInformationResolvePagingParams implements Resolve<any> {
             page: this.paginationUtil.parsePage(page),
             predicate: this.paginationUtil.parsePredicate(sort),
             ascending: this.paginationUtil.parseAscending(sort)
-      };
+        };
     }
 }
 
@@ -29,14 +28,15 @@ export const extraInformationRoute: Routes = [
         path: 'extra-information',
         component: ExtraInformationComponent,
         resolve: {
-            'pagingParams': ExtraInformationResolvePagingParams
+            pagingParams: ExtraInformationResolvePagingParams
         },
         data: {
             authorities: ['ROLE_USER'],
             pageTitle: 'chatApp.extraInformation.home.title'
         },
         canActivate: [UserRouteAccessService]
-    }, {
+    },
+    {
         path: 'extra-information/:id',
         component: ExtraInformationDetailComponent,
         data: {

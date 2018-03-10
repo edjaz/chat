@@ -9,10 +9,9 @@ import { ChatTestModule } from '../../../test.module';
 import { ConseillerDialogComponent } from '../../../../../../main/webapp/app/entities/conseiller/conseiller-dialog.component';
 import { ConseillerService } from '../../../../../../main/webapp/app/entities/conseiller/conseiller.service';
 import { Conseiller } from '../../../../../../main/webapp/app/entities/conseiller/conseiller.model';
-import { UserService } from '../../../../../../main/webapp/app/shared';
+import { UserService } from 'app/core';
 
 describe('Component Tests', () => {
-
     describe('Conseiller Management Dialog Component', () => {
         let comp: ConseillerDialogComponent;
         let fixture: ComponentFixture<ConseillerDialogComponent>;
@@ -20,18 +19,17 @@ describe('Component Tests', () => {
         let mockEventManager: any;
         let mockActiveModal: any;
 
-        beforeEach(async(() => {
-            TestBed.configureTestingModule({
-                imports: [ChatTestModule],
-                declarations: [ConseillerDialogComponent],
-                providers: [
-                    UserService,
-                    ConseillerService
-                ]
+        beforeEach(
+            async(() => {
+                TestBed.configureTestingModule({
+                    imports: [ChatTestModule],
+                    declarations: [ConseillerDialogComponent],
+                    providers: [UserService, ConseillerService]
+                })
+                    .overrideTemplate(ConseillerDialogComponent, '')
+                    .compileComponents();
             })
-            .overrideTemplate(ConseillerDialogComponent, '')
-            .compileComponents();
-        }));
+        );
 
         beforeEach(() => {
             fixture = TestBed.createComponent(ConseillerDialogComponent);
@@ -42,12 +40,14 @@ describe('Component Tests', () => {
         });
 
         describe('save', () => {
-            it('Should call update service on save for existing entity',
-                inject([],
+            it(
+                'Should call update service on save for existing entity',
+                inject(
+                    [],
                     fakeAsync(() => {
                         // GIVEN
                         const entity = new Conseiller(123);
-                        spyOn(service, 'update').and.returnValue(Observable.of(new HttpResponse({body: entity})));
+                        spyOn(service, 'update').and.returnValue(Observable.of(new HttpResponse({ body: entity })));
                         comp.conseiller = entity;
                         // WHEN
                         comp.save();
@@ -56,18 +56,20 @@ describe('Component Tests', () => {
                         // THEN
                         expect(service.update).toHaveBeenCalledWith(entity);
                         expect(comp.isSaving).toEqual(false);
-                        expect(mockEventManager.broadcastSpy).toHaveBeenCalledWith({ name: 'conseillerListModification', content: 'OK'});
+                        expect(mockEventManager.broadcastSpy).toHaveBeenCalledWith({ name: 'conseillerListModification', content: 'OK' });
                         expect(mockActiveModal.dismissSpy).toHaveBeenCalled();
                     })
                 )
             );
 
-            it('Should call create service on save for new entity',
-                inject([],
+            it(
+                'Should call create service on save for new entity',
+                inject(
+                    [],
                     fakeAsync(() => {
                         // GIVEN
                         const entity = new Conseiller();
-                        spyOn(service, 'create').and.returnValue(Observable.of(new HttpResponse({body: entity})));
+                        spyOn(service, 'create').and.returnValue(Observable.of(new HttpResponse({ body: entity })));
                         comp.conseiller = entity;
                         // WHEN
                         comp.save();
@@ -76,12 +78,11 @@ describe('Component Tests', () => {
                         // THEN
                         expect(service.create).toHaveBeenCalledWith(entity);
                         expect(comp.isSaving).toEqual(false);
-                        expect(mockEventManager.broadcastSpy).toHaveBeenCalledWith({ name: 'conseillerListModification', content: 'OK'});
+                        expect(mockEventManager.broadcastSpy).toHaveBeenCalledWith({ name: 'conseillerListModification', content: 'OK' });
                         expect(mockActiveModal.dismissSpy).toHaveBeenCalled();
                     })
                 )
             );
         });
     });
-
 });

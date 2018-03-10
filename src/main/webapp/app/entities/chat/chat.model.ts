@@ -1,4 +1,4 @@
-import { BaseEntity } from './../../shared';
+import { BaseEntity } from 'app/core/model/base-entity';
 
 export const enum ChatStatus {
     'WAITTING',
@@ -14,7 +14,6 @@ export class Chat implements BaseEntity {
         public opened?: any,
         public closed?: any,
         public clientId?: number,
-        public conseillers?: BaseEntity[],
-    ) {
-    }
+        public conseillers?: BaseEntity[]
+    ) {}
 }

@@ -5,11 +5,13 @@ import { ChatClientModule } from './client/client.module';
 import { ChatExtraInformationModule } from './extra-information/extra-information.module';
 import { ChatConseillerModule } from './conseiller/conseiller.module';
 import { ChatMessageModule } from './message/message.module';
+import { ChatCoreModule } from 'app/core';
 /* jhipster-needle-add-entity-module-import - JHipster will add entity modules imports here */
 
 @NgModule({
     // prettier-ignore
     imports: [
+        ChatCoreModule,
         ChatChatModule,
         ChatClientModule,
         ChatExtraInformationModule,

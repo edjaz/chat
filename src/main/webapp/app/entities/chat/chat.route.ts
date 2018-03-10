@@ -2,15 +2,14 @@ import { Injectable } from '@angular/core';
 import { Resolve, ActivatedRouteSnapshot, RouterStateSnapshot, Routes } from '@angular/router';
 import { JhiPaginationUtil } from 'ng-jhipster';
 
-import { UserRouteAccessService } from '../../shared';
 import { ChatComponent } from './chat.component';
 import { ChatDetailComponent } from './chat-detail.component';
 import { ChatPopupComponent } from './chat-dialog.component';
 import { ChatDeletePopupComponent } from './chat-delete-dialog.component';
+import { UserRouteAccessService } from 'app/core';
 
 @Injectable()
 export class ChatResolvePagingParams implements Resolve<any> {
-
     constructor(private paginationUtil: JhiPaginationUtil) {}
 
     resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
@@ -20,7 +19,7 @@ export class ChatResolvePagingParams implements Resolve<any> {
             page: this.paginationUtil.parsePage(page),
             predicate: this.paginationUtil.parsePredicate(sort),
             ascending: this.paginationUtil.parseAscending(sort)
-      };
+        };
     }
 }
 
@@ -29,14 +28,15 @@ export const chatRoute: Routes = [
         path: 'chat',
         component: ChatComponent,
         resolve: {
-            'pagingParams': ChatResolvePagingParams
+            pagingParams: ChatResolvePagingParams
         },
         data: {
             authorities: ['ROLE_USER'],
             pageTitle: 'chatApp.chat.home.title'
         },
         canActivate: [UserRouteAccessService]
-    }, {
+    },
+    {
         path: 'chat/:id',
         component: ChatDetailComponent,
         data: {

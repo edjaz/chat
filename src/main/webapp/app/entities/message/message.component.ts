@@ -6,15 +6,15 @@ import { JhiEventManager, JhiParseLinks, JhiAlertService } from 'ng-jhipster';
 
 import { Message } from './message.model';
 import { MessageService } from './message.service';
-import { ITEMS_PER_PAGE, Principal } from '../../shared';
+import { ITEMS_PER_PAGE } from '../../shared';
+import { Principal } from 'app/core';
 
 @Component({
     selector: 'jhi-message',
     templateUrl: './message.component.html'
 })
 export class MessageComponent implements OnInit, OnDestroy {
-
-currentAccount: any;
+    currentAccount: any;
     messages: Message[];
     error: any;
     success: any;
@@ -46,29 +46,37 @@ currentAccount: any;
             this.reverse = data.pagingParams.ascending;
             this.predicate = data.pagingParams.predicate;
         });
-        this.currentSearch = this.activatedRoute.snapshot && this.activatedRoute.snapshot.params['search'] ?
-            this.activatedRoute.snapshot.params['search'] : '';
+        this.currentSearch =
+            this.activatedRoute.snapshot && this.activatedRoute.snapshot.params['search']
+                ? this.activatedRoute.snapshot.params['search']
+                : '';
     }
 
     loadAll() {
         if (this.currentSearch) {
-            this.messageService.search({
-                page: this.page - 1,
-                query: this.currentSearch,
-                size: this.itemsPerPage,
-                sort: this.sort()}).subscribe(
+            this.messageService
+                .search({
+                    page: this.page - 1,
+                    query: this.currentSearch,
+                    size: this.itemsPerPage,
+                    sort: this.sort()
+                })
+                .subscribe(
                     (res: HttpResponse<Message[]>) => this.onSuccess(res.body, res.headers),
                     (res: HttpErrorResponse) => this.onError(res.message)
                 );
             return;
         }
-        this.messageService.query({
-            page: this.page - 1,
-            size: this.itemsPerPage,
-            sort: this.sort()}).subscribe(
+        this.messageService
+            .query({
+                page: this.page - 1,
+                size: this.itemsPerPage,
+                sort: this.sort()
+            })
+            .subscribe(
                 (res: HttpResponse<Message[]>) => this.onSuccess(res.body, res.headers),
                 (res: HttpErrorResponse) => this.onError(res.message)
-        );
+            );
     }
     loadPage(page: number) {
         if (page !== this.previousPage) {
@@ -77,8 +85,8 @@ currentAccount: any;
         }
     }
     transition() {
-        this.router.navigate(['/message'], {queryParams:
-            {
+        this.router.navigate(['/message'], {
+            queryParams: {
                 page: this.page,
                 size: this.itemsPerPage,
                 search: this.currentSearch,
@@ -91,10 +99,13 @@ currentAccount: any;
     clear() {
         this.page = 0;
         this.currentSearch = '';
-        this.router.navigate(['/message', {
-            page: this.page,
-            sort: this.predicate + ',' + (this.reverse ? 'asc' : 'desc')
-        }]);
+        this.router.navigate([
+            '/message',
+            {
+                page: this.page,
+                sort: this.predicate + ',' + (this.reverse ? 'asc' : 'desc')
+            }
+        ]);
         this.loadAll();
     }
     search(query) {
@@ -103,11 +114,14 @@ currentAccount: any;
         }
         this.page = 0;
         this.currentSearch = query;
-        this.router.navigate(['/message', {
-            search: this.currentSearch,
-            page: this.page,
-            sort: this.predicate + ',' + (this.reverse ? 'asc' : 'desc')
-        }]);
+        this.router.navigate([
+            '/message',
+            {
+                search: this.currentSearch,
+                page: this.page,
+                sort: this.predicate + ',' + (this.reverse ? 'asc' : 'desc')
+            }
+        ]);
         this.loadAll();
     }
     ngOnInit() {

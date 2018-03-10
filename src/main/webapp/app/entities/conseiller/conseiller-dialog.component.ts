@@ -9,14 +9,13 @@ import { JhiEventManager, JhiAlertService } from 'ng-jhipster';
 import { Conseiller } from './conseiller.model';
 import { ConseillerPopupService } from './conseiller-popup.service';
 import { ConseillerService } from './conseiller.service';
-import { User, UserService } from '../../shared';
+import { User, UserService } from 'app/core';
 
 @Component({
     selector: 'jhi-conseiller-dialog',
     templateUrl: './conseiller-dialog.component.html'
 })
 export class ConseillerDialogComponent implements OnInit {
-
     conseiller: Conseiller;
     isSaving: boolean;
 
@@ -28,13 +27,16 @@ export class ConseillerDialogComponent implements OnInit {
         private conseillerService: ConseillerService,
         private userService: UserService,
         private eventManager: JhiEventManager
-    ) {
-    }
+    ) {}
 
     ngOnInit() {
         this.isSaving = false;
-        this.userService.query()
-            .subscribe((res: HttpResponse<User[]>) => { this.users = res.body; }, (res: HttpErrorResponse) => this.onError(res.message));
+        this.userService.query().subscribe(
+            (res: HttpResponse<User[]>) => {
+                this.users = res.body;
+            },
+            (res: HttpErrorResponse) => this.onError(res.message)
+        );
     }
 
     clear() {
@@ -44,21 +46,18 @@ export class ConseillerDialogComponent implements OnInit {
     save() {
         this.isSaving = true;
         if (this.conseiller.id !== undefined) {
-            this.subscribeToSaveResponse(
-                this.conseillerService.update(this.conseiller));
+            this.subscribeToSaveResponse(this.conseillerService.update(this.conseiller));
         } else {
-            this.subscribeToSaveResponse(
-                this.conseillerService.create(this.conseiller));
+            this.subscribeToSaveResponse(this.conseillerService.create(this.conseiller));
         }
     }
 
     private subscribeToSaveResponse(result: Observable<HttpResponse<Conseiller>>) {
-        result.subscribe((res: HttpResponse<Conseiller>) =>
-            this.onSaveSuccess(res.body), (res: HttpErrorResponse) => this.onSaveError());
+        result.subscribe((res: HttpResponse<Conseiller>) => this.onSaveSuccess(res.body), (res: HttpErrorResponse) => this.onSaveError());
     }
 
     private onSaveSuccess(result: Conseiller) {
-        this.eventManager.broadcast({ name: 'conseillerListModification', content: 'OK'});
+        this.eventManager.broadcast({ name: 'conseillerListModification', content: 'OK' });
         this.isSaving = false;
         this.activeModal.dismiss(result);
     }
@@ -81,22 +80,16 @@ export class ConseillerDialogComponent implements OnInit {
     template: ''
 })
 export class ConseillerPopupComponent implements OnInit, OnDestroy {
-
     routeSub: any;
 
-    constructor(
-        private route: ActivatedRoute,
-        private conseillerPopupService: ConseillerPopupService
-    ) {}
+    constructor(private route: ActivatedRoute, private conseillerPopupService: ConseillerPopupService) {}
 
     ngOnInit() {
         this.routeSub = this.route.params.subscribe((params) => {
-            if ( params['id'] ) {
-                this.conseillerPopupService
-                    .open(ConseillerDialogComponent as Component, params['id']);
+            if (params['id']) {
+                this.conseillerPopupService.open(ConseillerDialogComponent as Component, params['id']);
             } else {
-                this.conseillerPopupService
-                    .open(ConseillerDialogComponent as Component);
+                this.conseillerPopupService.open(ConseillerDialogComponent as Component);
             }
         });
     }

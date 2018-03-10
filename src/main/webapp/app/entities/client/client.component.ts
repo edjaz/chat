@@ -6,15 +6,15 @@ import { JhiEventManager, JhiParseLinks, JhiAlertService } from 'ng-jhipster';
 
 import { Client } from './client.model';
 import { ClientService } from './client.service';
-import { ITEMS_PER_PAGE, Principal } from '../../shared';
+import { ITEMS_PER_PAGE } from '../../shared';
+import { Principal } from 'app/core';
 
 @Component({
     selector: 'jhi-client',
     templateUrl: './client.component.html'
 })
 export class ClientComponent implements OnInit, OnDestroy {
-
-currentAccount: any;
+    currentAccount: any;
     clients: Client[];
     error: any;
     success: any;
@@ -46,29 +46,37 @@ currentAccount: any;
             this.reverse = data.pagingParams.ascending;
             this.predicate = data.pagingParams.predicate;
         });
-        this.currentSearch = this.activatedRoute.snapshot && this.activatedRoute.snapshot.params['search'] ?
-            this.activatedRoute.snapshot.params['search'] : '';
+        this.currentSearch =
+            this.activatedRoute.snapshot && this.activatedRoute.snapshot.params['search']
+                ? this.activatedRoute.snapshot.params['search']
+                : '';
     }
 
     loadAll() {
         if (this.currentSearch) {
-            this.clientService.search({
-                page: this.page - 1,
-                query: this.currentSearch,
-                size: this.itemsPerPage,
-                sort: this.sort()}).subscribe(
+            this.clientService
+                .search({
+                    page: this.page - 1,
+                    query: this.currentSearch,
+                    size: this.itemsPerPage,
+                    sort: this.sort()
+                })
+                .subscribe(
                     (res: HttpResponse<Client[]>) => this.onSuccess(res.body, res.headers),
                     (res: HttpErrorResponse) => this.onError(res.message)
                 );
             return;
         }
-        this.clientService.query({
-            page: this.page - 1,
-            size: this.itemsPerPage,
-            sort: this.sort()}).subscribe(
+        this.clientService
+            .query({
+                page: this.page - 1,
+                size: this.itemsPerPage,
+                sort: this.sort()
+            })
+            .subscribe(
                 (res: HttpResponse<Client[]>) => this.onSuccess(res.body, res.headers),
                 (res: HttpErrorResponse) => this.onError(res.message)
-        );
+            );
     }
     loadPage(page: number) {
         if (page !== this.previousPage) {
@@ -77,8 +85,8 @@ currentAccount: any;
         }
     }
     transition() {
-        this.router.navigate(['/client'], {queryParams:
-            {
+        this.router.navigate(['/client'], {
+            queryParams: {
                 page: this.page,
                 size: this.itemsPerPage,
                 search: this.currentSearch,
@@ -91,10 +99,13 @@ currentAccount: any;
     clear() {
         this.page = 0;
         this.currentSearch = '';
-        this.router.navigate(['/client', {
-            page: this.page,
-            sort: this.predicate + ',' + (this.reverse ? 'asc' : 'desc')
-        }]);
+        this.router.navigate([
+            '/client',
+            {
+                page: this.page,
+                sort: this.predicate + ',' + (this.reverse ? 'asc' : 'desc')
+            }
+        ]);
         this.loadAll();
     }
     search(query) {
@@ -103,11 +114,14 @@ currentAccount: any;
         }
         this.page = 0;
         this.currentSearch = query;
-        this.router.navigate(['/client', {
-            search: this.currentSearch,
-            page: this.page,
-            sort: this.predicate + ',' + (this.reverse ? 'asc' : 'desc')
-        }]);
+        this.router.navigate([
+            '/client',
+            {
+                search: this.currentSearch,
+                page: this.page,
+                sort: this.predicate + ',' + (this.reverse ? 'asc' : 'desc')
+            }
+        ]);
         this.loadAll();
     }
     ngOnInit() {

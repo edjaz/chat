@@ -1,4 +1,4 @@
-import { BaseEntity } from './../../shared';
+import { BaseEntity } from 'app/core/model/base-entity';
 
 export const enum MessageStatus {
     'IN_PROGRESS',
@@ -16,7 +16,6 @@ export class Message implements BaseEntity {
         public sent?: any,
         public chatId?: number,
         public writeByClientId?: number,
-        public writeByConseillerId?: number,
-    ) {
-    }
+        public writeByConseillerId?: number
+    ) {}
 }
