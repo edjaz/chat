@@ -92,7 +92,7 @@ public class ChatResourceIntTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final ChatResource chatResource = new ChatResource(chatService, conseillerService, hasFreeChat, openChatChannel);
+        final ChatResource chatResource = new ChatResource(chatService, conseillerService, hasFreeChat, openChatChannel, broadCastHasFreeChat);
         this.restChatMockMvc = MockMvcBuilders.standaloneSetup(chatResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)

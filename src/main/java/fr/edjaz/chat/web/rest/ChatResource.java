@@ -29,6 +29,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.ServerSentEvent;
+import org.springframework.integration.channel.PublishSubscribeChannel;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
@@ -53,11 +54,14 @@ public class ChatResource {
 
     private final ClientService clientService;
 
-    public ChatResource(ChatService chatService, ConseillerService conseillerService, OpenChatChannel openChatChannel, ClientService clientService) {
+    private final PublishSubscribeChannel broadCastHasFreeChat;
+
+    public ChatResource(ChatService chatService, ConseillerService conseillerService, OpenChatChannel openChatChannel, ClientService clientService, PublishSubscribeChannel broadCastHasFreeChat) {
         this.chatService = chatService;
         this.conseillerService = conseillerService;
         this.openChatChannel = openChatChannel;
         this.clientService = clientService;
+        this.broadCastHasFreeChat = broadCastHasFreeChat;
     }
 
 
@@ -69,7 +73,7 @@ public class ChatResource {
                 sink.next(ServerSentEvent.builder().event("free").build());
             } else {
                 sink.next(ServerSentEvent.builder().event("notAvailable").build());
-                openChatChannel.hasFreeChat().subscribe(message -> sink.next(ServerSentEvent.builder().event("free").build()));
+                broadCastHasFreeChat.subscribe(message -> sink.next(ServerSentEvent.builder().event("free").build()));
             }
 
         });
@@ -106,8 +110,8 @@ public class ChatResource {
 
 
     @GetMapping(value = "/chats/conseiller/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Mono<ChatDTO> subscribeConseiller() {
-        return Mono.create(sink -> {
+    public Flux<ChatDTO> subscribeConseiller() {
+        return Flux.create(sink -> {
             // 1. create new chat
 
             String loginConseiller = SecurityUtils.getCurrentUserLogin().get();
@@ -120,7 +124,10 @@ public class ChatResource {
 
             openChatChannel.conseillerFreeForChat().send(MessageBuilder.withPayload(chatDTO).build());
             // 2.wait un Client
-            openChatChannel.waitClientSubscribe().subscribe(message -> sink.success((ChatDTO) message.getPayload()));
+            openChatChannel.waitClientSubscribe().subscribe(message -> {
+                sink.next((ChatDTO) message.getPayload());
+                sink.complete();
+            });
         });
     }
 

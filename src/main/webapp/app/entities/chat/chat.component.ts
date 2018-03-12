@@ -1,13 +1,17 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { HttpResponse, HttpErrorResponse } from '@angular/common/http';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { HttpClient, HttpErrorResponse, HttpRequest, HttpResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs/Subscription';
-import { JhiEventManager, JhiParseLinks, JhiAlertService } from 'ng-jhipster';
+import { JhiAlertService, JhiEventManager, JhiParseLinks } from 'ng-jhipster';
 
 import { Chat } from './chat.model';
 import { ChatService } from './chat.service';
 import { ITEMS_PER_PAGE } from '../../shared';
 import { Principal } from 'app/core';
+
+import { catchError, tap, last, map } from 'rxjs/operators';
+
+declare var EventSource;
 
 @Component({
     selector: 'jhi-chat',
@@ -37,7 +41,8 @@ export class ChatComponent implements OnInit, OnDestroy {
         private principal: Principal,
         private activatedRoute: ActivatedRoute,
         private router: Router,
-        private eventManager: JhiEventManager
+        private eventManager: JhiEventManager,
+        private http: HttpClient
     ) {
         this.itemsPerPage = ITEMS_PER_PAGE;
         this.routeData = this.activatedRoute.data.subscribe((data) => {
@@ -78,12 +83,14 @@ export class ChatComponent implements OnInit, OnDestroy {
                 (res: HttpErrorResponse) => this.onError(res.message)
             );
     }
+
     loadPage(page: number) {
         if (page !== this.previousPage) {
             this.previousPage = page;
             this.transition();
         }
     }
+
     transition() {
         this.router.navigate(['/chat'], {
             queryParams: {
@@ -108,6 +115,7 @@ export class ChatComponent implements OnInit, OnDestroy {
         ]);
         this.loadAll();
     }
+
     search(query) {
         if (!query) {
             return this.clear();
@@ -124,6 +132,7 @@ export class ChatComponent implements OnInit, OnDestroy {
         ]);
         this.loadAll();
     }
+
     ngOnInit() {
         this.loadAll();
         this.principal.identity().then((account) => {
@@ -139,6 +148,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     trackId(index: number, item: Chat) {
         return item.id;
     }
+
     registerChangeInChats() {
         this.eventSubscriber = this.eventManager.subscribe('chatListModification', (response) => this.loadAll());
     }
@@ -158,7 +168,38 @@ export class ChatComponent implements OnInit, OnDestroy {
         // this.page = pagingParams.page;
         this.chats = data;
     }
+
     private onError(error) {
         this.jhiAlertService.error(error.message, null, null);
+    }
+
+    subscribe() {
+        const req = new HttpRequest('GET', '/api/chats/conseiller/subscribe', {
+            reportProgress: true
+        });
+
+        this.http
+            .request(req)
+            .pipe(
+                map((event) => {
+                    console.log(event);
+                }),
+                tap((message) => {
+                    console.log(message);
+                }),
+                last(), // return last (completed) message to caller
+                catchError(function(e) {})
+            )
+            .subscribe((next) => {
+                console.log(next);
+            });
+
+        /*
+        this.http.get('/api/chats/conseiller/subscribe').subscribe(
+            value => {
+                console.log(value)
+            }
+        );
+*/
     }
 }
