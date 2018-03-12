@@ -204,6 +204,7 @@ export class ChatComponent implements OnInit, OnDestroy {
 
         this.http
             .request(req)
+            .timeout(-1)
             .pipe(
                 map((event) => {
                     console.log(event);
