@@ -188,7 +188,9 @@ export class ChatComponent implements OnInit, OnDestroy {
                     console.log(message);
                 }),
                 last(), // return last (completed) message to caller
-                catchError(function(e) {})
+                catchError((err, caught) => {
+                    return caught;
+                })
             )
             .subscribe((next) => {
                 console.log(next);

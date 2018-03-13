@@ -41,11 +41,12 @@ spring:
                     destination: topic-jhipster
 
                 waitForFreeChat:
-                    destination: chat
+                    destination: waitchat
                     content-type: application/json
 
                 waitClientSubscribe:
                     destination: chat
+                    content-type: application/json
                 openChat:
                     destination: chat
                     content-type: application/json

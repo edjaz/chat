@@ -1,5 +1,6 @@
 package fr.edjaz.chat.web.rest;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Instant;
@@ -8,6 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 import com.codahale.metrics.annotation.Timed;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.edjaz.chat.domain.enumeration.ChatStatus;
 import fr.edjaz.chat.messaging.OpenChatChannel;
 import fr.edjaz.chat.security.SecurityUtils;
@@ -81,9 +83,9 @@ public class ChatResource {
 
 
     @GetMapping(value = "/chats/client/open", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Mono<ChatDTO> openClient() {
+    public Flux<ChatDTO> openClient() {
 
-        return Mono.create(sink -> {
+        return Flux.create(sink -> {
             Optional<ChatDTO> freeChat = chatService.findFreeChat();
 
             ClientDTO client = new ClientDTO();
@@ -94,16 +96,28 @@ public class ChatResource {
                 chatDTO.setClientId(client.getId());
                 chatService.save(chatDTO);
                 openChatChannel.openChat().send(MessageBuilder.withPayload(chatDTO).build());
-                sink.success(chatDTO);
+                sink.next(chatDTO);
+                sink.complete();
             } else {
 
-                ClientDTO finalClient = client;
+                // TODO :
+/*                ClientDTO finalClient = client;
                 openChatChannel.waitForFreeChat().subscribe(message -> {
-                    ChatDTO chatDTO = (ChatDTO) message.getPayload();
-                    chatDTO.setClientId(finalClient.getId());
-                    chatDTO = chatService.save(chatDTO);
-                    sink.success(chatDTO);
-                });
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    objectMapper.findAndRegisterModules();
+
+                    ChatDTO chatDTO = null;
+                    try {
+                        chatDTO = objectMapper.readValue((byte[]) message.getPayload(), ChatDTO.class);
+                        chatDTO.setClientId(finalClient.getId());
+                        chatDTO = chatService.save(chatDTO);
+                        sink.next(chatDTO);
+                        sink.complete();
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });*/
             }
         });
     }
@@ -125,8 +139,17 @@ public class ChatResource {
             openChatChannel.conseillerFreeForChat().send(MessageBuilder.withPayload(chatDTO).build());
             // 2.wait un Client
             openChatChannel.waitClientSubscribe().subscribe(message -> {
-                sink.next((ChatDTO) message.getPayload());
-                sink.complete();
+                ObjectMapper objectMapper = new ObjectMapper();
+                objectMapper.findAndRegisterModules();
+                try {
+                    ChatDTO chat = objectMapper.readValue((byte[]) message.getPayload(), ChatDTO.class);
+                    sink.next(chat);
+                    sink.complete();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+
             });
         });
     }
