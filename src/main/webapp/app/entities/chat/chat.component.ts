@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { HttpClient, HttpErrorResponse, HttpRequest, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs/Subscription';
 import { JhiAlertService, JhiEventManager, JhiParseLinks } from 'ng-jhipster';
@@ -8,10 +8,9 @@ import { Chat } from './chat.model';
 import { ChatService } from './chat.service';
 import { ITEMS_PER_PAGE } from '../../shared';
 import { Principal } from 'app/core';
+import { LocalStorageService, SessionStorageService } from 'ngx-webstorage';
 
-import { catchError, tap, last, map } from 'rxjs/operators';
-
-declare var EventSource;
+declare var EventSourcePolyfill: any;
 
 @Component({
     selector: 'jhi-chat',
@@ -35,6 +34,8 @@ export class ChatComponent implements OnInit, OnDestroy {
     reverse: any;
 
     constructor(
+        private localStorage: LocalStorageService,
+        private sessionStorage: SessionStorageService,
         private chatService: ChatService,
         private parseLinks: JhiParseLinks,
         private jhiAlertService: JhiAlertService,
@@ -174,6 +175,29 @@ export class ChatComponent implements OnInit, OnDestroy {
     }
 
     subscribe() {
+        var headers = {};
+
+        const token = this.localStorage.retrieve('authenticationToken') || this.sessionStorage.retrieve('authenticationToken');
+        if (!!token) {
+            headers = {
+                headers: {
+                    Authorization: 'Bearer ' + token
+                }
+            };
+        }
+
+        var es = new EventSourcePolyfill('/api/chats/conseiller/subscribe', headers);
+        es.addEventListener('open', (e) => {
+            console.log(e);
+        });
+        es.addEventListener('message', (e) => {
+            console.log(e);
+        });
+        es.addEventListener('error', (e) => {
+            console.log(e);
+        });
+
+        /*
         const req = new HttpRequest('GET', '/api/chats/conseiller/subscribe', {
             reportProgress: true
         });
@@ -195,6 +219,7 @@ export class ChatComponent implements OnInit, OnDestroy {
             .subscribe((next) => {
                 console.log(next);
             });
+*/
 
         /*
         this.http.get('/api/chats/conseiller/subscribe').subscribe(

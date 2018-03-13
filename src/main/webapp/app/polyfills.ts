@@ -67,4 +67,6 @@ import 'zone.js/dist/zone'; // Included with Angular CLI.
  */
 // import 'intl/locale-data/jsonp/en';
 
+import 'eventsource/lib/eventsource';
+
 require('../manifest.webapp');
