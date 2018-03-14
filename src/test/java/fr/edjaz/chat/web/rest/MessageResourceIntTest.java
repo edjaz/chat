@@ -3,9 +3,12 @@ package fr.edjaz.chat.web.rest;
 import fr.edjaz.chat.ChatApp;
 
 import fr.edjaz.chat.domain.Message;
+import fr.edjaz.chat.messaging.ChatMessageChannel;
 import fr.edjaz.chat.repository.MessageRepository;
+import fr.edjaz.chat.service.ConseillerService;
 import fr.edjaz.chat.service.MessageService;
 import fr.edjaz.chat.repository.search.MessageSearchRepository;
+import fr.edjaz.chat.service.UserService;
 import fr.edjaz.chat.service.dto.MessageDTO;
 import fr.edjaz.chat.service.mapper.MessageMapper;
 import fr.edjaz.chat.web.rest.errors.ExceptionTranslator;
@@ -88,10 +91,20 @@ public class MessageResourceIntTest {
 
     private Message message;
 
+    @Autowired
+    private ChatMessageChannel chatMessageChannel;
+
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private ConseillerService conseillerService;
+
+
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final MessageResource messageResource = new MessageResource(messageService, chatMessageChannel, userService, conseillerService);
+        final MessageResource messageResource = new MessageResource(messageService, chatMessageChannel, conseillerService, broadCastChatMessageChannel, chatService, clientService);
         this.restMessageMockMvc = MockMvcBuilders.standaloneSetup(messageResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)

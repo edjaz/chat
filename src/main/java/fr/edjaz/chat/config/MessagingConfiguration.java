@@ -48,20 +48,20 @@ public class MessagingConfiguration {
         return MessageChannels.publishSubscribe().get();
     }
 
-    @StreamListener("hasFreeChat")
-    public void consume(Message message) {
-        broadCastHasFreeChat().send(MessageBuilder.withPayload(message).build());
-    }
-
-
-/*    @Bean
-    public PublishSubscribeChannel subscribeChannel(){
+    @Bean
+    public PublishSubscribeChannel broadCastChatMessageChannel(){
         return MessageChannels.publishSubscribe().get();
     }
 
-    @StreamListener(ConsumerChannel.CHANNEL)
-    public void consume(Message message) {
-        subscribeChannel().send(MessageBuilder.withPayload(message).build());
 
-    }*/
+    @StreamListener("hasFreeChat")
+    public void hasFreeChat(Message message) {
+        broadCastHasFreeChat().send(MessageBuilder.withPayload(message).build());
+    }
+
+    @StreamListener("readMessage")
+    public void chatMessageChannel(Message message) {
+        broadCastChatMessageChannel().send(MessageBuilder.withPayload(message).build());
+    }
+
 }

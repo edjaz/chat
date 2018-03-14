@@ -1,5 +1,6 @@
 package fr.edjaz.chat.web.rest;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Instant;
@@ -7,11 +8,16 @@ import java.util.List;
 import java.util.Optional;
 
 import com.codahale.metrics.annotation.Timed;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.edjaz.chat.domain.enumeration.MessageStatus;
 import fr.edjaz.chat.messaging.ChatMessageChannel;
 import fr.edjaz.chat.security.SecurityUtils;
+import fr.edjaz.chat.service.ChatService;
+import fr.edjaz.chat.service.ClientService;
 import fr.edjaz.chat.service.ConseillerService;
 import fr.edjaz.chat.service.MessageService;
+import fr.edjaz.chat.service.dto.ChatDTO;
+import fr.edjaz.chat.service.dto.ClientDTO;
 import fr.edjaz.chat.service.dto.ConseillerDTO;
 import fr.edjaz.chat.service.dto.MessageDTO;
 import fr.edjaz.chat.web.rest.errors.BadRequestAlertException;
@@ -25,9 +31,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.codec.ServerSentEvent;
+import org.springframework.integration.channel.PublishSubscribeChannel;
 import org.springframework.messaging.support.MessageBuilder;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 
@@ -48,10 +56,19 @@ public class MessageResource {
 
     private final ConseillerService conseillerService;
 
-    public MessageResource(MessageService messageService, ChatMessageChannel chatMessageChannel, ConseillerService conseillerService) {
+    private final PublishSubscribeChannel broadCastChatMessageChannel;
+
+    private final ChatService chatService;
+
+    private final ClientService clientService;
+
+    public MessageResource(MessageService messageService, ChatMessageChannel chatMessageChannel, ConseillerService conseillerService, PublishSubscribeChannel broadCastChatMessageChannel, ChatService chatService, ClientService clientService) {
         this.messageService = messageService;
         this.chatMessageChannel = chatMessageChannel;
         this.conseillerService = conseillerService;
+        this.broadCastChatMessageChannel = broadCastChatMessageChannel;
+        this.chatService = chatService;
+        this.clientService = clientService;
     }
 
 
@@ -79,7 +96,7 @@ public class MessageResource {
 
         messageDTO = messageService.save(messageDTO);
 
-        chatMessageChannel.sendToConseiller().send(MessageBuilder.withPayload(messageDTO).build());
+        chatMessageChannel.sendMessage().send(MessageBuilder.withPayload(messageDTO).build());
     }
 
 
@@ -100,32 +117,108 @@ public class MessageResource {
         messageDTO.setWriteByConseillerId(conseiller.getId());
 
         messageService.save(messageDTO);
-        chatMessageChannel.sendToClient().send(MessageBuilder.withPayload(messageDTO).build());
+        chatMessageChannel.sendMessage().send(MessageBuilder.withPayload(messageDTO).build());
 
     }
 
 
-    @GetMapping("/chats/{idChat}/client/{idClient}/messages")
-    @Timed
-    public Flux<ServerSentEvent<MessageDTO>> clientReadMessage(@PathVariable Long idChat) {
-        return Flux.create(sink -> chatMessageChannel.waitConseiller().subscribe(message -> {
-            MessageDTO msg = (MessageDTO) message.getPayload();
-            if (msg.getChatId().equals(idChat)) {
-                sink.next(ServerSentEvent.builder(msg).build());
+
+
+
+    @PostMapping(value = "/chats/{id}/messages/conseiller")
+    public void writeMessageConseiller(@PathVariable Long id, @RequestBody MessageDTO messageDTO) {
+        String loginConseiller = SecurityUtils.getCurrentUserLogin().get();
+        ConseillerDTO conseillerDTO = conseillerService.findByLogin(loginConseiller);
+
+        messageDTO.setStatus(MessageStatus.DONE);
+        messageDTO.setCreated(Instant.now());
+        messageDTO.setSent(Instant.now());
+        messageDTO.setChatId(id);
+        messageDTO.setWriteByConseillerId(conseillerDTO.getId());
+
+        messageDTO = messageService.save(messageDTO);
+
+        chatMessageChannel.sendMessage().send(MessageBuilder.withPayload(messageDTO).build());
+    }
+
+    @PostMapping(value = "/chats/{id}/messages/client")
+    public void writeMessageClient(@PathVariable Long id, @RequestBody MessageDTO messageDTO) {
+        ClientDTO clientDTO = (ClientDTO) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        messageDTO.setCreated(Instant.now());
+        messageDTO.setSent(Instant.now());
+        messageDTO.setChatId(id);
+        messageDTO.setWriteByClientId(clientDTO.getId());
+
+        messageDTO = messageService.save(messageDTO);
+
+        chatMessageChannel.sendMessage().send(MessageBuilder.withPayload(messageDTO).build());
+
+    }
+
+
+
+    @GetMapping(value = "/chats/{id}/messages/conseiller", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<MessageDTO> messageConseiller(@PathVariable Long id) {
+        ChatDTO chatDTO = chatService.findOne(id);
+
+        ClientDTO clientDTO = clientService.findOne(chatDTO.getClientId());
+        MessageDTO messageDTO = new MessageDTO();
+        messageDTO.setChatId(chatDTO.getId());
+        messageDTO.setCreated(Instant.now());
+        messageDTO.setSent(Instant.now());
+        messageDTO.setStatus(MessageStatus.DONE);
+        String loginConseiller = SecurityUtils.getCurrentUserLogin().get();
+        ConseillerDTO conseillerDTO = conseillerService.findByLogin(loginConseiller);
+        messageDTO.setWriteByConseillerId(conseillerDTO.getId());
+
+        if (clientDTO.getLastname() != null && clientDTO.getFirstname() != null) {
+            //say hello
+            messageDTO.setText("Bonjour " + clientDTO.getFirstname() + " " + clientDTO.getFirstname());
+        } else {
+            //say hello ananymous
+            messageDTO.setText("Bonjour ");
+        }
+        messageDTO = messageService.save(messageDTO);
+
+        chatMessageChannel.sendMessage().send(MessageBuilder.withPayload(messageDTO).build());
+
+
+        return Flux.create(sink -> broadCastChatMessageChannel.subscribe(message -> {
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.findAndRegisterModules();
+
+            try {
+                MessageDTO msg = objectMapper.readValue((byte[]) message.getPayload(), MessageDTO.class);
+                if (msg.getChatId().equals(id)) {
+                    sink.next(msg);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
+
         }));
     }
 
 
-    @GetMapping("/chats/{idChat}/conseiller/messages")
-    @Timed
-    public Flux<ServerSentEvent<MessageDTO>> conseillerReadMessage(@PathVariable Long idChat) {
-        return Flux.create(sink -> chatMessageChannel.waitClient().subscribe(message -> {
-            MessageDTO msg = (MessageDTO) message.getPayload();
-            if (msg.getChatId().equals(idChat)) {
-                sink.next(ServerSentEvent.builder(msg).build());
+    @GetMapping(value = "/chats/{id}/messages/client", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<MessageDTO> messageClient(@PathVariable Long id) {
+
+        return Flux.create(sink -> broadCastChatMessageChannel.subscribe(message -> {
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.findAndRegisterModules();
+
+            try {
+                MessageDTO msg = objectMapper.readValue((byte[]) message.getPayload(), MessageDTO.class);
+                if (msg.getChatId().equals(id)) {
+                    sink.next(msg);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
+
         }));
+
     }
 
 

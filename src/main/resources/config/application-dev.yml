@@ -58,18 +58,11 @@ spring:
                     destination: chatSubscribe
                     content-type: application/json
 
-                waitClient:
-                    destination: messageClient
+                sendMessage:
+                    destination: message
                     content-type: application/json
-                sendToConseiller:
-                    destination: messageClient
-                    content-type: application/json
-
-                waitConseiller:
-                    destination: messageConseiller
-                    content-type: application/json
-                sendToClient:
-                    destination: messageConseiller
+                readMessage:
+                    destination: message
                     content-type: application/json
 
 

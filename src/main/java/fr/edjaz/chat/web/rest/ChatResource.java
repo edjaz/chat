@@ -1,23 +1,21 @@
 package fr.edjaz.chat.web.rest;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.time.Instant;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.edjaz.chat.domain.enumeration.ChatStatus;
+import fr.edjaz.chat.domain.enumeration.MessageStatus;
+import fr.edjaz.chat.messaging.ChatMessageChannel;
 import fr.edjaz.chat.messaging.OpenChatChannel;
+import fr.edjaz.chat.security.AuthoritiesConstants;
 import fr.edjaz.chat.security.SecurityUtils;
 import fr.edjaz.chat.service.ChatService;
 import fr.edjaz.chat.service.ClientService;
 import fr.edjaz.chat.service.ConseillerService;
+import fr.edjaz.chat.service.MessageService;
 import fr.edjaz.chat.service.dto.ChatDTO;
 import fr.edjaz.chat.service.dto.ClientDTO;
+import fr.edjaz.chat.service.dto.ConseillerDTO;
+import fr.edjaz.chat.service.dto.MessageDTO;
 import fr.edjaz.chat.web.rest.errors.BadRequestAlertException;
 import fr.edjaz.chat.web.rest.util.HeaderUtil;
 import fr.edjaz.chat.web.rest.util.PaginationUtil;
@@ -33,9 +31,19 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.integration.channel.PublishSubscribeChannel;
 import org.springframework.messaging.support.MessageBuilder;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
+
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.time.Instant;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * REST controller for managing Chat.
@@ -57,6 +65,7 @@ public class ChatResource {
     private final ClientService clientService;
 
     private final PublishSubscribeChannel broadCastHasFreeChat;
+
 
     public ChatResource(ChatService chatService, ConseillerService conseillerService, OpenChatChannel openChatChannel, ClientService clientService, PublishSubscribeChannel broadCastHasFreeChat) {
         this.chatService = chatService;
@@ -91,6 +100,8 @@ public class ChatResource {
             ClientDTO client = new ClientDTO();
             client = clientService.save(client);
 
+            SecurityContextHolder.getContext().setAuthentication(new AnonymousAuthenticationToken("anonymous", client, Collections.singletonList(new SimpleGrantedAuthority(AuthoritiesConstants.ANONYMOUS))));
+
             if (freeChat.isPresent()) {
                 ChatDTO chatDTO = freeChat.get();
                 chatDTO.setClientId(client.getId());
@@ -123,6 +134,9 @@ public class ChatResource {
     }
 
 
+
+
+
     @GetMapping(value = "/chats/conseiller/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<ChatDTO> subscribeConseiller() {
         return Flux.create(sink -> {
@@ -153,6 +167,11 @@ public class ChatResource {
             });
         });
     }
+
+
+
+
+
 
 
     /**

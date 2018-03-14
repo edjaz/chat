@@ -22,7 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 /**
  * Service for sending emails.
  * <p>
- * We use the @Async annotation to send emails asynchronously.
+ * We use the @Async annotation to sendMessage emails asynchronously.
  */
 @Service
 public class MailService {

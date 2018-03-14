@@ -3,9 +3,14 @@ package fr.edjaz.chat.web.rest;
 import fr.edjaz.chat.ChatApp;
 
 import fr.edjaz.chat.domain.Chat;
+import fr.edjaz.chat.messaging.ChatMessageChannel;
+import fr.edjaz.chat.messaging.OpenChatChannel;
 import fr.edjaz.chat.repository.ChatRepository;
 import fr.edjaz.chat.service.ChatService;
 import fr.edjaz.chat.repository.search.ChatSearchRepository;
+import fr.edjaz.chat.service.ClientService;
+import fr.edjaz.chat.service.ConseillerService;
+import fr.edjaz.chat.service.UserService;
 import fr.edjaz.chat.service.dto.ChatDTO;
 import fr.edjaz.chat.service.mapper.ChatMapper;
 import fr.edjaz.chat.web.rest.errors.ExceptionTranslator;
@@ -89,10 +94,29 @@ public class ChatResourceIntTest {
 
     private Chat chat;
 
+
+    @Autowired
+    private ChatMessageChannel chatMessageChannel;
+
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private ConseillerService conseillerService;
+
+    @Autowired
+    private OpenChatChannel openChatChannel;
+
+    @Autowired
+    private ClientService clientService;
+
+    @Autowired
+    private PublishSubscribeChannel broadCastHasFreeChat;
+
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final ChatResource chatResource = new ChatResource(chatService, conseillerService, hasFreeChat, openChatChannel, broadCastHasFreeChat);
+        final ChatResource chatResource = new ChatResource(chatService, conseillerService, openChatChannel, clientService, broadCastHasFreeChat, chatMessageChannel, messageService, broadCastChatMessageChannel);
         this.restChatMockMvc = MockMvcBuilders.standaloneSetup(chatResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)

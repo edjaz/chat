@@ -45,7 +45,7 @@ public class TestController {
         msg.setIdChat(idChat);
         msg.setText(UUID.randomUUID().toString());
 
-        producerChannel.messageChannel().send(MessageBuilder.withPayload(msg).build());
+        producerChannel.messageChannel().sendMessage(MessageBuilder.withPayload(msg).build());
     }
 */
 

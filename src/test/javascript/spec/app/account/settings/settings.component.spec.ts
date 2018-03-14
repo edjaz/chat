@@ -38,7 +38,7 @@ describe('Component Tests', () => {
             mockPrincipal = fixture.debugElement.injector.get(Principal);
         });
 
-        it('should send the current identity upon save', () => {
+        it('should sendMessage the current identity upon save', () => {
             // GIVEN
             const accountValues = {
                 firstName: 'John',
