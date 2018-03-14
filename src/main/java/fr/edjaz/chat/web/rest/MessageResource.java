@@ -9,6 +9,7 @@ import java.util.Optional;
 
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.edjaz.chat.domain.enumeration.ChatStatus;
 import fr.edjaz.chat.domain.enumeration.MessageStatus;
 import fr.edjaz.chat.messaging.ChatMessageChannel;
 import fr.edjaz.chat.security.SecurityUtils;
@@ -72,58 +73,6 @@ public class MessageResource {
     }
 
 
-    @PostMapping("/chats/{idChat}/client/{idClient}/messages")
-    @Timed
-    public void sendClientMessage(@PathVariable Long idChat, @PathVariable Long idClient, @RequestBody MessageClientVM message) throws URISyntaxException {
-        log.debug("REST request to save Message : {}", message);
-
-
-        MessageDTO messageDTO = new MessageDTO();
-
-        if (message.getId() == null) {
-            messageDTO.setId(message.getId());
-        }
-
-        messageDTO.setChatId(idChat);
-        messageDTO.setCreated(Instant.now());
-        if (message.isValidated()) {
-            messageDTO.setSent(Instant.now());
-            messageDTO.setStatus(MessageStatus.DONE);
-        } else {
-            messageDTO.setStatus(MessageStatus.IN_PROGRESS);
-        }
-        messageDTO.setWriteByClientId(idClient);
-
-        messageDTO = messageService.save(messageDTO);
-
-        chatMessageChannel.sendMessage().send(MessageBuilder.withPayload(messageDTO).build());
-    }
-
-
-    @PostMapping("/chats/{idChat}/conseiller/messages")
-    @Timed
-    public void sendConseillerMessage(@PathVariable Long idChat, @RequestBody MessageClientVM message) throws URISyntaxException {
-        log.debug("REST request to save Message : {}", message);
-
-        Optional<String> currentUserLogin = SecurityUtils.getCurrentUserLogin();
-        ConseillerDTO conseiller = conseillerService.findByLogin(currentUserLogin.get());
-
-        MessageDTO messageDTO = new MessageDTO();
-
-        messageDTO.setChatId(idChat);
-        messageDTO.setCreated(Instant.now());
-        messageDTO.setSent(Instant.now());
-        messageDTO.setStatus(MessageStatus.DONE);
-        messageDTO.setWriteByConseillerId(conseiller.getId());
-
-        messageService.save(messageDTO);
-        chatMessageChannel.sendMessage().send(MessageBuilder.withPayload(messageDTO).build());
-
-    }
-
-
-
-
 
     @PostMapping(value = "/chats/{id}/messages/conseiller")
     public void writeMessageConseiller(@PathVariable Long id, @RequestBody MessageDTO messageDTO) {
@@ -161,6 +110,8 @@ public class MessageResource {
     @GetMapping(value = "/chats/{id}/messages/conseiller", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<MessageDTO> messageConseiller(@PathVariable Long id) {
         ChatDTO chatDTO = chatService.findOne(id);
+        chatDTO.setStatus(ChatStatus.OPENED);
+        chatService.save(chatDTO);
 
         ClientDTO clientDTO = clientService.findOne(chatDTO.getClientId());
         MessageDTO messageDTO = new MessageDTO();
